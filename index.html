@@ -1044,12 +1044,16 @@ auth.onAuthStateChanged(async user => {
 
         let resolved = false;
 
-        let timeout = setTimeout(async () => {
+       let timeout = setTimeout(async () => {
             if(resolved) return;
             resolved = true;
             db.ref(`users/${user.uid}/loginRequest`).off();
-            await finalizeLogin(user, userData, snap.exists()); // Hết giờ -> Ép đăng nhập
-        }, 20000);
+            
+            // XỬ LÝ MỚI: Hết 20s mà không có phản hồi -> Tự động đá ra (Từ chối đăng nhập)
+            resetLoaderUI();
+            auth.signOut();
+            alert('Người đang dùng tài khoản không phản hồi. Yêu cầu đăng nhập bị tự động từ chối.');
+        }, 20000); // 20 giây
 
         db.ref(`users/${user.uid}/loginRequest`).on('value', async (reqSnap) => {
             const req = reqSnap.val();

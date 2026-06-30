@@ -2927,10 +2927,10 @@ function renderUserTable() {
         }
 
         const actionBtns = isSelf
-            ? `<button class="btn-icon" title="Lịch sử đăng nhập" onclick="openModalLoginHistory('${uid}','${user.name}')">🕒 Lịch Sử</button>
+            ? `<button class="btn-icon" title="Lịch sử đăng nhập" onclick="openModalLoginHistory('${uid}','${user.name}')">Lịch Sử</button>
                <span style="font-size:11px;color:#94a3b8;">(Tài khoản của bạn)</span>`
             : `
-                <button class="btn-icon" title="Lịch sử đăng nhập" onclick="openModalLoginHistory('${uid}','${user.name}')">🕒 Lịch Sử</button>
+                <button class="btn-icon" title="Lịch sử đăng nhập" onclick="openModalLoginHistory('${uid}','${user.name}')">Lịch Sử</button>
                 <button class="btn-icon" title="Đổi mật khẩu" onclick="openModalChangePass('${uid}','${user.email}','${user.name}')">Đổi MK</button>
                 <button class="btn-icon" title="Đổi phân quyền" onclick="openModalChangeRole('${uid}','${user.email}','${user.name}','${user.role}')">Quyền</button>
                 <button class="btn-icon danger" title="Xóa tài khoản" onclick="deleteUser('${uid}','${user.email}','${user.name}')">🗑</button>

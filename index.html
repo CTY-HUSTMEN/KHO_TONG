@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KHO HUST MEN</title>
+    <title>KHO VĂN PHÒNG HUST MEN</title>
 
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -425,7 +425,7 @@
 
 <section id="login-section" style="display:none;">
     <div class="login-card">
-        <h2>KHO VP HUST MEN</h2>
+        <h2>KHO VĂN PHÒNG HUST MEN</h2>
         <p class="login-subtitle"></p>
         <div class="input-group"><input type="email" id="txt-email" value="admin@hustmen.com" placeholder="Email..."></div>
         <div class="input-group"><input type="password" id="txt-password" value="123456" placeholder="Mật khẩu..."></div>
@@ -444,11 +444,11 @@
 <section id="app-section">
     <div id="mobile-topbar">
         <button id="btn-mobile-menu" onclick="toggleMobileSidebar()" aria-label="Mở menu">☰</button>
-        <span id="mobile-topbar-title">KHO VP HUST MEN</span>
+        <span id="mobile-topbar-title">KHO VĂN PHÒNG HUST MEN</span>
     </div>
     <div id="sidebar-overlay" onclick="closeMobileSidebar()"></div>
     <nav class="sidebar">
-        <div class="sidebar-brand">KHO VP HUST MEN <span class="firebase-dot" title="Firebase Realtime"></span>
+        <div class="sidebar-brand">KHO VĂN PHÒNG HUST MEN <span class="firebase-dot" title="Firebase Realtime"></span>
             <button id="btn-mobile-close" onclick="closeMobileSidebar()" aria-label="Đóng menu">✕</button>
         </div>
         <div class="sidebar-user">
@@ -561,10 +561,20 @@
                                 <select id="in-type" style="flex:1;" onchange="handlePackageTypeChange()">
                                     </select>
                             </div>
-                            <div id="new-pkg-container" style="display:none; margin-top:10px; gap:10px; background:#f8fafc; padding:10px; border-radius:8px; border:1px dashed #cbd5e1;">
-                                <input type="text" id="new-pkg-name" placeholder="Nhập tên bao bì..." style="flex:1; padding:8px; font-size:13px;">
-                                <input type="color" id="new-pkg-color" value="#3b82f6" style="width:35px; height:35px; padding:0; border:none; cursor:pointer;" title="Chọn màu hiển thị trên kệ">
-                                <button type="button" onclick="saveNewPackageType()" style="padding:0 15px; background:var(--accent-color); color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">Lưu</button>
+                            <div id="new-pkg-container" style="display:none; margin-top:10px; flex-direction:column; gap:8px; background:#f8fafc; padding:12px; border-radius:8px; border:1px dashed #cbd5e1;">
+                                <div style="display:flex; gap:8px; align-items:center;">
+                                    <input type="text" id="new-pkg-name" placeholder="Tên bao bì mới..." style="flex:1; padding:8px; font-size:13px; border:1px solid var(--border-light); border-radius:6px;">
+                                    <input type="color" id="new-pkg-color" value="#3b82f6" style="width:35px; height:35px; padding:0; border:none; cursor:pointer; border-radius:4px;" title="Chọn màu hiển thị trên kệ">
+                                </div>
+                                <div style="display:flex; gap:8px; align-items:center;">
+                                    <label style="font-size:12px; color:#64748b; white-space:nowrap;">Định lượng:</label>
+                                    <select id="new-pkg-unit" style="flex:1; padding:7px; font-size:13px; border:1px solid var(--border-light); border-radius:6px; background:#fff;">
+                                        <option value="gói">Gói</option>
+                                        <option value="túi">Túi</option>
+                                        <option value="cái">Cái</option>
+                                    </select>
+                                    <button type="button" onclick="saveNewPackageType()" style="padding:7px 16px; background:var(--accent-color); color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold; white-space:nowrap;">Lưu</button>
+                                </div>
                             </div>
                         </div>
 
@@ -594,7 +604,13 @@
                     <form id="form-xuat-chuan">
                         <div class="form-group">
                             <label>Chọn Mã Hàng (Chỉ Túi & Cái)</label>
-                            <select id="out-product-chuan" required></select>
+                            <select id="out-product-chuan" onchange="updateExportLocations('chuan')" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Chọn Vị Trí Xuất</label>
+                            <select id="out-loc-chuan" required>
+                                <option value="AUTO">Tự động (Lấy từ mọi nơi)</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label>Ghi Chú Xuất Kho</label>
@@ -610,7 +626,13 @@
                     <form id="form-xuat-mau" style="display:none;">
                         <div class="form-group">
                             <label>Chọn Mã Hàng (Chỉ Gói)</label>
-                            <select id="out-product-mau" required></select>
+                            <select id="out-product-mau" onchange="updateExportLocations('mau')" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Chọn Vị Trí Xuất</label>
+                            <select id="out-loc-mau" required>
+                                <option value="AUTO">Tự động (Lấy từ mọi nơi)</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label>Ghi Chú Gửi Mẫu</label>
@@ -847,6 +869,26 @@
                             </p>
                         </form>
                     </div>
+
+                    <!-- Giới hạn lưu lịch sử đăng nhập -->
+                    <div class="form-card" style="margin-top:16px;">
+                        <h3 style="font-size:14px;font-weight:700;margin-bottom:14px;">Lịch Sử Đăng Nhập</h3>
+                        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                            <label style="font-size:13px;font-weight:600;color:#475569;white-space:nowrap;">Giới hạn lưu trữ:</label>
+                            <input type="number" id="login-history-limit-input" min="5" max="200" value="15"
+                                style="width:80px;padding:6px 10px;border:1px solid var(--border-light);border-radius:6px;font-size:13px;font-family:monospace;"
+                                placeholder="15">
+                            <span style="font-size:12px;color:#64748b;">lần gần nhất / tài khoản</span>
+                            <button onclick="applyLoginHistoryLimit()"
+                                style="padding:6px 12px;background:var(--accent-color);color:white;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">
+                                Áp Dụng
+                            </button>
+                        </div>
+                        <div style="margin-top:8px;display:flex;align-items:center;gap:10px;">
+                            <span style="font-size:11px;color:#94a3b8;">Vượt giới hạn → tự động xóa lần cũ nhất</span>
+                        </div>
+                    </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -867,6 +909,33 @@
 </div>
 
 <script>
+
+window.updateExportLocations = function(mode) {
+    const sku = document.getElementById(`out-product-${mode}`).value;
+    const locSelect = document.getElementById(`out-loc-${mode}`);
+    
+    // Mặc định luôn có tùy chọn Auto
+    locSelect.innerHTML = '<option value="AUTO">Tự động (Lấy từ mọi nơi)</option>';
+    if (!sku) return;
+
+    const allowedUnits = mode === 'chuan' ? ['túi', 'cái'] : ['gói'];
+    const getItemUnit = (item) => item.unit || (item.type === 'bg-clear-white' ? 'túi' : (item.type === 'carton-bulk' ? 'cái' : 'gói'));
+
+    // 1. Quét tìm trong Khu hàng chờ
+    Object.entries(fbWaiting).forEach(([wId, w]) => {
+        if (w.sku === sku && allowedUnits.includes(getItemUnit(w))) {
+            locSelect.innerHTML += `<option value="${wId}">Khu Hàng Chờ (Tồn: ${w.qty})</option>`;
+        }
+    });
+
+    // 2. Quét tìm trên các Kệ
+    Object.entries(fbLocations).forEach(([locId, loc]) => {
+        if (loc.sku === sku && allowedUnits.includes(getItemUnit(loc))) {
+            const label = `${loc.rack}-${loc.tier}-${loc.slot}`;
+            locSelect.innerHTML += `<option value="${locId}">Kệ ${label} (Tồn: ${loc.qty})</option>`;
+        }
+    });
+};
 
 const firebaseConfig = {
     apiKey:            "AIzaSyDBCTvwyUsIFllzr0MIdOSN7VDQcNO86BU",
@@ -954,6 +1023,18 @@ document.getElementById('btn-logout').addEventListener('click', async () => {
         } catch (error) {
             console.warn("Không thể xóa trạng thái online:", error);
         }
+
+        if (currentLoginRecordId) {
+            const logoutRef = db.ref(`loginHistory/${currentUser.uid}/${currentLoginRecordId}/logoutTime`);
+            try {
+                await logoutRef.onDisconnect().cancel();
+                await logoutRef.set(new Date().toISOString());
+            } catch (error) {
+                console.warn("Không thể ghi giờ đăng xuất:", error);
+            }
+            sessionStorage.removeItem('myLoginRecordId');
+            currentLoginRecordId = null;
+        }
     }
 
     auth.signOut();
@@ -990,7 +1071,32 @@ if (!currentSessionId) {
     currentSessionId = generateUUID();
     sessionStorage.setItem('mySessionId', currentSessionId);
 }
+let currentLoginRecordId = sessionStorage.getItem('myLoginRecordId') || null;
 let loginReqListener = null;
+
+// Khi reload trang: hủy onDisconnect để Firebase không ghi logoutTime nhầm.
+// navigator.sendBeacon đảm bảo request gửi được kể cả khi tab đang đóng.
+// Biến _isReloading phân biệt reload vs đóng tab thật sự.
+let _isReloading = false;
+window.addEventListener("beforeunload", () => {
+    _isReloading = true;
+    if (!currentLoginRecordId || !currentUser?.uid) return;
+    // Hủy onDisconnect cho cả presence lẫn logoutTime
+    // (fire-and-forget, không await được trong beforeunload)
+    try {
+        db.ref(`loginHistory/${currentUser.uid}/${currentLoginRecordId}/logoutTime`).onDisconnect().cancel();
+        db.ref(`presence/${currentUser.uid}`).onDisconnect().cancel();
+    } catch(e) {}
+});
+
+// Sau khi trang load lại xong, đặt lại onDisconnect (được gọi từ startRealtimeListeners)
+function rearmOnDisconnect() {
+    _isReloading = false;
+    if (!currentUser?.uid || !currentLoginRecordId) return;
+    db.ref(`loginHistory/${currentUser.uid}/${currentLoginRecordId}/logoutTime`)
+        .onDisconnect().set(new Date().toISOString());
+    db.ref(`presence/${currentUser.uid}`).onDisconnect().remove();
+}
 
 function resetLoaderUI() {
     const loader = document.getElementById('global-loader');
@@ -1119,6 +1225,28 @@ async function finalizeLogin(user, userData, userExists) {
         }
     });
 
+    const existingRecordId = sessionStorage.getItem('myLoginRecordId');
+    if (existingRecordId) {
+        // Reload trang: tái sử dụng bản ghi cũ, onDisconnect sẽ được đăng ký lại bên dưới
+        currentLoginRecordId = existingRecordId;
+    } else {
+        // Đăng nhập mới thật sự: tạo bản ghi mới
+        try {
+            const histRef = db.ref(`loginHistory/${user.uid}`).push();
+            currentLoginRecordId = histRef.key;
+            sessionStorage.setItem('myLoginRecordId', currentLoginRecordId);
+            await histRef.set({
+                loginTime: new Date().toISOString(),
+                logoutTime: null,
+                sessionId: currentSessionId
+            });
+            // Tự động xóa các bản ghi cũ nếu vượt quá giới hạn
+            enforceLoginHistoryLimit(user.uid);
+        } catch (e) {
+            console.warn('Không thể ghi lịch sử đăng nhập:', e);
+        }
+    }
+
     document.body.setAttribute('data-role', role);
     document.getElementById('display-user-name').textContent = name.toUpperCase();
     document.getElementById('display-role').textContent =
@@ -1158,7 +1286,7 @@ const listeners = {};
                         enforceTransactionLimit();
                     }
                 }
-            if (p === 'settings')     { fbSettings = val; updateTxLimitUI(); }
+            if (p === 'settings')     { fbSettings = val; updateTxLimitUI(); updateLoginHistoryBadge(0); }
             if (p === 'users')        { fbUsers = val; renderUserTable(); }
             if (p === 'conversionRatios') fbConversionRatios = val;
             if (p === 'packagingTypes') {
@@ -1173,6 +1301,8 @@ const listeners = {};
         const presenceRef = db.ref(`presence/${currentUser.uid}`);
         presenceRef.set(true);
         presenceRef.onDisconnect().remove();
+        // Đặt lại onDisconnect mỗi khi kết nối Firebase được thiết lập.
+        // Hàm rearmOnDisconnect() sẽ được gọi từ listener .info/connected bên dưới.
     }
 
     db.ref('presence').on('value', snap => {
@@ -1181,8 +1311,13 @@ const listeners = {};
     });
 
     db.ref('.info/connected').on('value', snap => {
-        if (snap.val()) setSyncBadge('online', 'Realtime');
-        else            setSyncBadge('offline', 'Offline');
+        if (snap.val()) {
+            setSyncBadge('online', 'Realtime');
+            // Trang vừa kết nối lại (kể cả sau reload): đặt lại onDisconnect
+            rearmOnDisconnect();
+        } else {
+            setSyncBadge('offline', 'Offline');
+        }
     });
 }
 
@@ -1316,6 +1451,26 @@ function getStockByUnitMap(allowedUnits) {
     return map;
 }
 
+// Trả về danh sách các đơn vị (túi/gói/cái) đang thực sự tồn tại trong kho
+// (locations + waiting) cho 1 SKU cụ thể — dùng để chỉ hiện đúng phân loại
+// thực có ở mục "Phân Loại Kiểm" trong Kiểm Kho Thực Tế.
+function getUnitsPresentForSku(sku) {
+    const units = new Set();
+    const process = (item) => {
+        if (item.sku !== sku || !(item.qty > 0)) return;
+        let itemUnit = item.unit;
+        if (!itemUnit) {
+            if (item.type === 'bg-clear-white') itemUnit = 'túi';
+            else if (item.type === 'carton-bulk') itemUnit = 'cái';
+            else itemUnit = 'gói';
+        }
+        units.add(itemUnit);
+    };
+    Object.values(fbLocations).forEach(process);
+    Object.values(fbWaiting).forEach(process);
+    return units;
+}
+
 const naturalSortSku = (a, b) => (a || '').localeCompare((b || ''), undefined, { numeric: true, sensitivity: 'base' });
 
 function renderSelectBoxes() {
@@ -1398,21 +1553,30 @@ window.toggleExportTab = function(mode) {
     }
 }
 
+// Bảng áp sẵn định lượng cho từng loại bao bì cố định
+const PRESET_PKG_UNITS = {
+    'bg-gray-original': 'gói',   // Túi gốc (màu xám) → gói
+    'bg-clear-white':   'túi',   // Túi đóng sẵn (màu trắng) → túi
+    'carton-bulk':      'cái',   // Thùng Carton → cái
+    'bg-yellow-bag':    'cái',   // Túi màu vàng → cái
+    'bg-cream-box':     'cái',   // Hộp hàng → cái
+};
+
 window.renderPackageSelect = function() {
     const sel = document.getElementById('in-type');
     if (!sel) return;
     const currentVal = sel.value;
     
     let html = `
-        <option value="bg-gray-original">Túi gốc (Màu xám)</option>
-        <option value="bg-clear-white">Túi đóng sẵn (Màu trắng)</option>
-        <option value="carton-bulk">Thùng Carton</option>
-        <option value="bg-yellow-bag">Túi vàng (Màu vàng)</option>
-        <option value="bg-cream-box">Hộp hàng (Màu kem)</option>
+        <option value="bg-gray-original" data-unit="gói">Túi gốc (Màu xám) — Gói</option>
+        <option value="bg-clear-white"   data-unit="túi">Túi đóng sẵn (Màu trắng) — Túi</option>
+        <option value="carton-bulk"      data-unit="cái">Thùng Carton — Cái</option>
+        <option value="bg-yellow-bag"    data-unit="cái">Túi màu vàng — Cái</option>
+        <option value="bg-cream-box"     data-unit="cái">Hộp hàng — Cái</option>
     `;
     
     Object.entries(fbPackagingTypes).forEach(([id, pkg]) => {
-        html += `<option value="${id}">${pkg.name}</option>`;
+        html += `<option value="${id}" data-unit="${pkg.unit || 'gói'}">${pkg.name} — ${pkg.unit || 'gói'}</option>`;
     });
     html += `<option value="NEW" style="font-weight:bold; color:var(--accent-color);">+ Tạo loại bao bì mới...</option>`;
     
@@ -1420,24 +1584,45 @@ window.renderPackageSelect = function() {
     if (currentVal && sel.querySelector(`option[value="${currentVal}"]`)) sel.value = currentVal;
 
     document.getElementById('new-pkg-container').style.display = 'none';
+    // Áp sẵn định lượng cho giá trị hiện tại
+    applyPackageUnit();
+};
+
+// Tự động set định lượng khi chọn loại bao bì
+window.applyPackageUnit = function() {
+    const sel = document.getElementById('in-type');
+    const unitSel = document.getElementById('in-unit');
+    if (!sel || !unitSel) return;
+    const opt = sel.options[sel.selectedIndex];
+    const unit = opt?.dataset?.unit || PRESET_PKG_UNITS[sel.value] || null;
+    if (unit) unitSel.value = unit;
 };
 
 window.handlePackageTypeChange = function() {
     const val = document.getElementById('in-type').value;
     document.getElementById('new-pkg-container').style.display = val === 'NEW' ? 'flex' : 'none';
+    if (val !== 'NEW') applyPackageUnit();
 };
 
 window.saveNewPackageType = async function() {
-    const name = document.getElementById('new-pkg-name').value.trim();
+    const name  = document.getElementById('new-pkg-name').value.trim();
     const color = document.getElementById('new-pkg-color').value;
-    if(!name) { showToast('⚠️ Vui lòng nhập tên bao bì'); return; }
+    const unit  = document.getElementById('new-pkg-unit')?.value || 'gói';
+    if (!name) { showToast('⚠️ Vui lòng nhập tên bao bì'); return; }
     
     const newId = 'custom_' + Date.now();
-    await db.ref(`packagingTypes/${newId}`).set({ name, color });
-    showToast('✅ Đã tạo loại bao bì mới thành công!');
+    await db.ref(`packagingTypes/${newId}`).set({ name, color, unit });
+    showToast(`✅ Đã tạo loại bao bì: ${name} (định lượng: ${unit})`);
     
     document.getElementById('new-pkg-name').value = '';
-    setTimeout(() => document.getElementById('in-type').value = newId, 300);
+    // Sau khi renderPackageSelect cập nhật, chọn loại vừa tạo
+    setTimeout(() => {
+        const sel = document.getElementById('in-type');
+        if (sel && sel.querySelector(`option[value="${newId}"]`)) {
+            sel.value = newId;
+            applyPackageUnit();
+        }
+    }, 400);
 };
 
 window.saveConversionRatio = async function(id, value) {
@@ -1676,9 +1861,9 @@ function renderLogs() {
         }
 
         let note = tx.note || '';
-        if (!note && tx.from && tx.from !== 'Supplier') note = `Từ: ${tx.from}`;
-        if (!note && tx.from === 'Supplier') note = `Từ: Nhà cung cấp`;
-        if (tx.to && tx.to !== 'Waiting' && tx.to !== 'Stored') note += (note ? ' → ' : '') + tx.to;
+        // if (!note && tx.from && tx.from !== 'Supplier') note = `Bán:`;
+        // if (!note && tx.from === 'Supplier') note = `Từ: Nhà cung cấp`;
+        if (tx.to && tx.to !== 'Waiting' && tx.to !== 'Stored') note += (note ? ' ' : '') + tx.to;
 
         tbody.innerHTML += `<tr>
             <td style="white-space:nowrap;">${displayTime}</td>
@@ -2171,18 +2356,88 @@ async function addNewRack() {
 
 window.deleteRack = async (rackId) => {
     const tierData = fbRacks[rackId] || {};
-    let hasItem = false;
+    const itemsInRack = [];
     Object.values(tierData).forEach(tier => {
         Object.values(tier).forEach(slot => {
-            if (slot.locationId) hasItem = true;
+            if (slot.locationId && fbLocations[slot.locationId]) {
+                itemsInRack.push(fbLocations[slot.locationId]);
+            }
         });
     });
-    if (hasItem) {
-        showToast('⚠️ Kệ đang chứa hàng! Dọn trống trước khi tháo.'); return;
+
+    const warnMsg = itemsInRack.length
+        ? `Kệ ${rackId} đang chứa ${itemsInRack.length} loại hàng.\n\nXác nhận tháo dỡ kệ ${rackId}? Toàn bộ hàng trong kệ sẽ được TỰ ĐỘNG đưa về Khu Hàng Chờ Xếp Kệ, và các kệ phía sau sẽ được đánh số lại liên tục (không còn nhảy số / trống kệ).`
+        : `Xác nhận tháo dỡ kệ ${rackId}? Các kệ phía sau sẽ được đánh số lại liên tục.`;
+
+    if (!confirm(warnMsg)) return;
+
+    setSyncBadge('saving', 'Đang xóa & sắp xếp lại kệ...');
+    const updates = {};
+
+    // 1) Đưa toàn bộ hàng đang ở kệ bị xóa về Khu Hàng Chờ Xếp Kệ
+    Object.values(tierData).forEach(tier => {
+        Object.values(tier).forEach(slot => {
+            if (slot.locationId && fbLocations[slot.locationId]) {
+                const loc = fbLocations[slot.locationId];
+                const waitId = 'WAIT' + Date.now() + Math.floor(Math.random() * 10000);
+                updates[`waiting/${waitId}`] = {
+                    sku: loc.sku,
+                    qty: loc.qty,
+                    type: loc.type,
+                    unit: loc.unit || null,
+                    status: 'waiting',
+                    createdAt: new Date().toISOString(),
+                    note: `Tự động chuyển về do tháo dỡ kệ ${rackId}`
+                };
+                updates[`locations/${slot.locationId}`] = null;
+            }
+        });
+    });
+
+    // 2) Xóa hẳn kệ này
+    updates[`racks/${rackId}`] = null;
+
+    // 3) ĐÁNH SỐ LẠI các kệ phía sau cho liên tục, không để trống số
+    // (vd: xóa K2 trong [K1,K2,K3,K4] → K3 trở thành K2, K4 trở thành K3)
+    // Chỉ áp dụng cho các kệ đặt tên theo đúng định dạng "K<số>".
+    const deletedNum = parseInt(rackId.replace(/^K/, ''));
+    if (!isNaN(deletedNum)) {
+        const rackIdMap = {}; // oldId -> newId
+
+        Object.keys(fbRacks)
+            .filter(id => id !== rackId)
+            .forEach(id => {
+                const m = id.match(/^K(\d+)$/);
+                if (!m) { rackIdMap[id] = id; return; } // kệ đặt tên khác, giữ nguyên
+                const num = parseInt(m[1]);
+                rackIdMap[id] = num > deletedNum ? `K${num - 1}` : id;
+            });
+
+        Object.entries(rackIdMap)
+            .sort((a, b) => {
+                const na = parseInt((a[0].match(/^K(\d+)$/) || [])[1] ?? 0);
+                const nb = parseInt((b[0].match(/^K(\d+)$/) || [])[1] ?? 0);
+                return na - nb;
+            })
+            .forEach(([oldId, newId]) => {
+            if (oldId === newId) return; // không cần dịch số
+
+            // Dời nguyên cấu trúc tầng/ô của kệ này sang ID mới
+            updates[`racks/${oldId}`] = null;
+            updates[`racks/${newId}`] = fbRacks[oldId];
+
+            // Cập nhật lại field "rack" trong từng location đang thuộc kệ này,
+            // để tránh tình trạng hàng "nhảy" sang kệ sai sau khi đổi số.
+            Object.entries(fbLocations).forEach(([locId, loc]) => {
+                if (loc.rack === oldId) {
+                    updates[`locations/${locId}/rack`] = newId;
+                }
+            });
+        });
     }
-    if (!confirm(`Xác nhận tháo dỡ kệ ${rackId}?`)) return;
-    await db.ref(`racks/${rackId}`).remove();
-    showToast(`🗑 Đã xóa kệ ${rackId}`);
+
+    await db.ref().update(updates);
+    showToast(`🗑 Đã xóa kệ ${rackId}${itemsInRack.length ? `, chuyển ${itemsInRack.length} mặt hàng về Hàng Chờ` : ''} và đánh số lại các kệ phía sau`);
 };
 
 document.getElementById('form-nhap').addEventListener('submit', async e => {
@@ -2220,64 +2475,101 @@ async function handleExportForm(e, mode) {
     e.preventDefault();
     const sku = document.getElementById(`out-product-${mode}`).value;
     const dest = document.getElementById(`out-dest-${mode}`).value.trim();
+    const selectedLoc = document.getElementById(`out-loc-${mode}`).value;
     let qtyToExport = parseInt(document.getElementById(`out-qty-${mode}`).value);
+    
     if (!sku || qtyToExport < 1) return;
 
     const allowedUnits = mode === 'chuan' ? ['túi', 'cái'] : ['gói'];
-    const stockMap = getStockByUnitMap(allowedUnits);
-    const currentTotal = stockMap.get(sku) || 0;
+    const getItemUnit = (item) => item.unit || (item.type === 'bg-clear-white' ? 'túi' : (item.type === 'carton-bulk' ? 'cái' : 'gói'));
 
-    if (currentTotal < qtyToExport) {
-        showToast(`❌ Tồn [${sku}] thuộc loại (${allowedUnits.join(', ')}) chỉ còn ${currentTotal}!`);
-        return;
+    // KKIỂM TRA TỒN KHO TRƯỚC KHI XUẤT
+    if (selectedLoc !== 'AUTO') {
+        const item = fbWaiting[selectedLoc] || fbLocations[selectedLoc];
+        if (!item || item.qty < qtyToExport) {
+            showToast(`❌ Vị trí bạn chọn chỉ có ${item ? item.qty : 0} sản phẩm, không đủ để xuất ${qtyToExport}!`);
+            return;
+        }
+    } else {
+        const stockMap = getStockByUnitMap(allowedUnits);
+        const currentTotal = stockMap.get(sku) || 0;
+        if (currentTotal < qtyToExport) {
+            showToast(`❌ Tổng tồn [${sku}] thuộc loại (${allowedUnits.join(', ')}) chỉ còn ${currentTotal}!`);
+            return;
+        }
     }
 
     const confirmMsg = mode === 'chuan' ? '📦 BẠN ĐANG XUẤT BÁN' : '🧪 BẠN ĐANG XUẤT GỬI MẪU';
-    if (!confirm(`${confirmMsg}\n\nMã hàng: ${sku}\nĐịnh dạng trừ: ${allowedUnits.join(', ')}\nSố lượng: ${qtyToExport}\nGhi chú: ${dest}\n\nXác nhận thao tác này?`)) return;
+    const locName = selectedLoc === 'AUTO' ? 'Tự động trừ dần' : 'Trừ tại vị trí đã chọn';
+    if (!confirm(`${confirmMsg}\n\nMã hàng: ${sku}\nVị trí: ${locName}\nSố lượng: ${qtyToExport}\nGhi chú: ${dest}\n\nXác nhận thao tác này?`)) return;
 
     setSyncBadge('saving', 'Đang lưu...');
     const updates = {};
     let remaining = qtyToExport;
 
-    const getItemUnit = (item) => item.unit || (item.type === 'bg-clear-white' ? 'túi' : (item.type === 'carton-bulk' ? 'cái' : 'gói'));
-
-    Object.entries(fbWaiting).forEach(([wId, w]) => {
-        if (remaining <= 0 || w.sku !== sku || !allowedUnits.includes(getItemUnit(w))) return;
-        if (w.qty <= remaining) {
-            updates[`waiting/${wId}`] = null;
-            remaining -= w.qty;
-        } else {
-            updates[`waiting/${wId}/qty`] = w.qty - remaining;
-            remaining = 0;
-        }
-    });
-
-    Object.entries(fbLocations).forEach(([locId, loc]) => {
-        if (remaining <= 0 || loc.sku !== sku || !allowedUnits.includes(getItemUnit(loc))) return;
-        const oldSlot = findSlotOfLocation(locId);
-        if (loc.qty <= remaining) {
-            updates[`locations/${locId}`] = null;
-            if (oldSlot) {
-                updates[`racks/${oldSlot.rackId}/${oldSlot.tierId}/${oldSlot.slotId}/locationId`] = null;
-                updates[`racks/${oldSlot.rackId}/${oldSlot.tierId}/${oldSlot.slotId}/used`] = 0;
+    // THỰC THI TRỪ HÀNG
+    if (selectedLoc !== 'AUTO') {
+        // TRỪ ĐÚNG VỊ TRÍ CHỈ ĐỊNH
+        if (fbWaiting[selectedLoc]) {
+            const w = fbWaiting[selectedLoc];
+            if (w.qty <= remaining) updates[`waiting/${selectedLoc}`] = null;
+            else updates[`waiting/${selectedLoc}/qty`] = w.qty - remaining;
+        } else if (fbLocations[selectedLoc]) {
+            const loc = fbLocations[selectedLoc];
+            const oldSlot = findSlotOfLocation(selectedLoc);
+            if (loc.qty <= remaining) {
+                updates[`locations/${selectedLoc}`] = null;
+                if (oldSlot) {
+                    updates[`racks/${oldSlot.rackId}/${oldSlot.tierId}/${oldSlot.slotId}/locationId`] = null;
+                    updates[`racks/${oldSlot.rackId}/${oldSlot.tierId}/${oldSlot.slotId}/used`] = 0;
+                }
+            } else {
+                updates[`locations/${selectedLoc}/qty`] = loc.qty - remaining;
+                if (oldSlot) updates[`racks/${oldSlot.rackId}/${oldSlot.tierId}/${oldSlot.slotId}/used`] = loc.qty - remaining;
             }
-            remaining -= loc.qty;
-        } else {
-            updates[`locations/${locId}/qty`] = loc.qty - remaining;
-            if (oldSlot) updates[`racks/${oldSlot.rackId}/${oldSlot.tierId}/${oldSlot.slotId}/used`] = loc.qty - remaining;
-            remaining = 0;
         }
-    });
+    } else {
+        // TỰ ĐỘNG TRỪ DẦN TỪ MỌI NƠI (Như phiên bản cũ)
+        Object.entries(fbWaiting).forEach(([wId, w]) => {
+            if (remaining <= 0 || w.sku !== sku || !allowedUnits.includes(getItemUnit(w))) return;
+            if (w.qty <= remaining) {
+                updates[`waiting/${wId}`] = null;
+                remaining -= w.qty;
+            } else {
+                updates[`waiting/${wId}/qty`] = w.qty - remaining;
+                remaining = 0;
+            }
+        });
+
+        Object.entries(fbLocations).forEach(([locId, loc]) => {
+            if (remaining <= 0 || loc.sku !== sku || !allowedUnits.includes(getItemUnit(loc))) return;
+            const oldSlot = findSlotOfLocation(locId);
+            if (loc.qty <= remaining) {
+                updates[`locations/${locId}`] = null;
+                if (oldSlot) {
+                    updates[`racks/${oldSlot.rackId}/${oldSlot.tierId}/${oldSlot.slotId}/locationId`] = null;
+                    updates[`racks/${oldSlot.rackId}/${oldSlot.tierId}/${oldSlot.slotId}/used`] = 0;
+                }
+                remaining -= loc.qty;
+            } else {
+                updates[`locations/${locId}/qty`] = loc.qty - remaining;
+                if (oldSlot) updates[`racks/${oldSlot.rackId}/${oldSlot.tierId}/${oldSlot.slotId}/used`] = loc.qty - remaining;
+                remaining = 0;
+            }
+        });
+    }
 
     const txId = generateTransID('XK');
     updates[`transactions/${txId}`] = {
         type: 'EXPORT', sku, qty: -qtyToExport, from: 'Warehouse',
-        to: dest || 'Xuất kho', note: (mode === 'mau' ? '[GỬI MẪU] ' : '') + dest,
+        to: dest || 'Xuất kho', note: (mode === 'mau' ? '[GỬI MẪU] ' : ''),
         time: new Date().toISOString(), user: currentUser.email
     };
 
     await db.ref().update(updates);
     document.getElementById(`out-dest-${mode}`).value = '';
+    // Reset lại ô chọn vị trí
+    updateExportLocations(mode); 
     showToast(`📤 Đã xuất ${qtyToExport} [${sku}] thành công!`);
 }
 
@@ -2286,12 +2578,40 @@ document.getElementById('form-xuat-mau').addEventListener('submit', e => handleE
 
 window.updateKKSystemQty = function(tab) {
     const sku  = document.getElementById('kk-product-unit').value;
-    const unit = document.getElementById('kk-unit-type').value;
-    if (!sku) { document.getElementById('kk-sys-qty-unit').value = ''; updateKKDiffPreview(); return; }
+    const typeSel = document.getElementById('kk-unit-type');
+
+    if (!sku) {
+        document.getElementById('kk-sys-qty-unit').value = '';
+        typeSel.innerHTML = `
+            <option value="túi">Túi (đóng sẵn - trắng)</option>
+            <option value="gói">Gói (túi gốc - xám)</option>
+            <option value="cái">Cái (thùng/hộp)</option>`;
+        updateKKDiffPreview();
+        return;
+    }
+
+    // Chỉ hiện các phân loại (túi/gói/cái) mà SKU này THỰC SỰ đang có trong kho
+    const labelMap = { 'túi': 'Túi (đóng sẵn - trắng)', 'gói': 'Gói (túi gốc - xám)', 'cái': 'Cái (thùng/hộp)' };
+    const unitsPresent = getUnitsPresentForSku(sku);
+    const prevType = typeSel.value;
+
+    if (unitsPresent.size) {
+        typeSel.innerHTML = ['túi', 'gói', 'cái']
+            .filter(u => unitsPresent.has(u))
+            .map(u => `<option value="${u}">${labelMap[u]}</option>`)
+            .join('');
+    } else {
+        // SKU chưa có hàng nào trong kho — không xác định được phân loại, hiện đủ 3 để không chặn thao tác
+        typeSel.innerHTML = ['túi', 'gói', 'cái'].map(u => `<option value="${u}">${labelMap[u]}</option>`).join('');
+    }
+
+    if (prevType && typeSel.querySelector(`option[value="${prevType}"]`)) typeSel.value = prevType;
+
+    const unit = typeSel.value;
     const unitMap = getStockByUnitMap([unit]);
     document.getElementById('kk-sys-qty-unit').value = unitMap.get(sku) || 0;
-    const labelMap = { 'túi': 'Túi đóng sẵn', 'gói': 'Gói/túi gốc', 'cái': 'Cái/thùng' };
-    document.getElementById('kk-unit-label-sys').textContent = `(${labelMap[unit] || unit})`;
+    const shortLabelMap = { 'túi': 'Túi đóng sẵn', 'gói': 'Gói/túi gốc', 'cái': 'Cái/thùng' };
+    document.getElementById('kk-unit-label-sys').textContent = `(${shortLabelMap[unit] || unit})`;
     updateKKDiffPreview();
 };
 
@@ -2607,8 +2927,10 @@ function renderUserTable() {
         }
 
         const actionBtns = isSelf
-            ? `<span style="font-size:11px;color:#94a3b8;">(Tài khoản của bạn)</span>`
+            ? `<button class="btn-icon" title="Lịch sử đăng nhập" onclick="openModalLoginHistory('${uid}','${user.name}')">🕒 Lịch Sử</button>
+               <span style="font-size:11px;color:#94a3b8;">(Tài khoản của bạn)</span>`
             : `
+                <button class="btn-icon" title="Lịch sử đăng nhập" onclick="openModalLoginHistory('${uid}','${user.name}')">🕒 Lịch Sử</button>
                 <button class="btn-icon" title="Đổi mật khẩu" onclick="openModalChangePass('${uid}','${user.email}','${user.name}')">Đổi MK</button>
                 <button class="btn-icon" title="Đổi phân quyền" onclick="openModalChangeRole('${uid}','${user.email}','${user.name}','${user.role}')">Quyền</button>
                 <button class="btn-icon danger" title="Xóa tài khoản" onclick="deleteUser('${uid}','${user.email}','${user.name}')">🗑</button>
@@ -2642,6 +2964,77 @@ window.closeModal = () => {
 document.getElementById('modal-overlay').addEventListener('click', e => {
     if (e.target === document.getElementById('modal-overlay')) closeModal();
 });
+
+window.openModalLoginHistory = async (uid, name) => {
+    const cancelBtn = document.querySelector('.btn-cancel');
+    const confirmBtn = document.getElementById('modal-confirm-btn');
+    cancelBtn.style.display = 'none';
+    confirmBtn.textContent = 'Đóng';
+
+    const restoreModalBtns = () => {
+        closeModal();
+        setTimeout(() => { cancelBtn.style.display = 'inline-block'; confirmBtn.textContent = 'Xác Nhận'; }, 300);
+    };
+
+    openModal(`Lịch Sử Đăng Nhập — ${name}`, `<div style="text-align:center;color:#94a3b8;padding:30px 0;">Đang tải...</div>`, restoreModalBtns);
+
+    try {
+        const snap = await db.ref(`loginHistory/${uid}`).get();
+        const records = snap.val() || {};
+
+        const fmtDateTime = (iso) => {
+            if (!iso) return null;
+            const d = new Date(iso);
+            return `${d.toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'})} ${d.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;
+        };
+
+        const rows = Object.values(records)
+            .sort((a, b) => new Date(b.loginTime) - new Date(a.loginTime))
+            .slice(0, 200); // chỉ hiện 200 lần gần nhất để tránh chậm
+
+        if (!rows.length) {
+            document.getElementById('modal-body').innerHTML =
+                `<div style="text-align:center;color:#94a3b8;padding:30px 0;">Chưa có lịch sử đăng nhập nào.</div>`;
+            return;
+        }
+
+        let html = `<div style="max-height:420px;overflow-y:auto;">
+            <table style="width:100%;font-size:12.5px;border-collapse:collapse;">
+                <thead style="position:sticky;top:0;background:#f8fafc;">
+                    <tr>
+                        <th style="text-align:left;padding:8px 6px;border-bottom:1px solid #e2e8f0;">Đăng Nhập</th>
+                        <th style="text-align:left;padding:8px 6px;border-bottom:1px solid #e2e8f0;">Đăng Xuất</th>
+                        <th style="text-align:left;padding:8px 6px;border-bottom:1px solid #e2e8f0;">Thời Gian Online</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+        rows.forEach(r => {
+            const loginStr = fmtDateTime(r.loginTime) || '—';
+            const logoutStr = fmtDateTime(r.logoutTime);
+            const durationStr = (() => {
+                if (!r.logoutTime) return `<span style="color:var(--success);font-weight:700;">● Đang online</span>`;
+                const ms = new Date(r.logoutTime) - new Date(r.loginTime);
+                if (!(ms > 0)) return '—';
+                const mins = Math.round(ms / 60000);
+                const h = Math.floor(mins / 60), m = mins % 60;
+                return h > 0 ? `${h} giờ ${m} phút` : `${m} phút`;
+            })();
+
+            html += `<tr>
+                <td style="padding:7px 6px;border-bottom:1px solid #f1f5f9;">${loginStr}</td>
+                <td style="padding:7px 6px;border-bottom:1px solid #f1f5f9;">${logoutStr || '<span style="color:#94a3b8;">— chưa đăng xuất —</span>'}</td>
+                <td style="padding:7px 6px;border-bottom:1px solid #f1f5f9;">${durationStr}</td>
+            </tr>`;
+        });
+
+        html += `</tbody></table></div>`;
+        document.getElementById('modal-body').innerHTML = html;
+    } catch (err) {
+        document.getElementById('modal-body').innerHTML =
+            `<div style="text-align:center;color:var(--danger);padding:30px 0;">❌ Không thể tải lịch sử (${err.code || err.message}).</div>`;
+    }
+};
 
 window.openModalChangePass = (uid, email, name) => {
     openModal(
@@ -2803,6 +3196,27 @@ function showLoginConflictPopup(uid, reqSession) {
         clearInterval(_conflictCountdownInterval);
         _conflictCountdownInterval = null;
         closeConflictPopup();
+
+        // ── Ghi logoutTime cho bản ghi lịch sử đăng nhập hiện tại ──
+        // Nếu không làm bước này, bản ghi sẽ kẹt ở "Đang online" mãi
+        // vì auth.signOut() không kích hoạt onDisconnect (chỉ đóng tab mới kích hoạt).
+        if (currentLoginRecordId && currentUser?.uid) {
+            try {
+                const logoutRef = db.ref(`loginHistory/${currentUser.uid}/${currentLoginRecordId}/logoutTime`);
+                await logoutRef.onDisconnect().cancel(); // hủy onDisconnect cũ để tránh ghi 2 lần
+                await logoutRef.set(new Date().toISOString());
+            } catch (e) {
+                console.warn('Không thể ghi logoutTime khi nhường đăng nhập:', e);
+            }
+            sessionStorage.removeItem('myLoginRecordId');
+            currentLoginRecordId = null;
+        }
+
+        // Xóa presence để người kia thấy offline ngay
+        if (currentUser?.uid) {
+            try { await db.ref(`presence/${currentUser.uid}`).remove(); } catch (e) {}
+        }
+
         await db.ref(`users/${uid}/loginRequest`).update({ status: 'approved' });
         auth.signOut();
     };
@@ -2879,6 +3293,77 @@ async function saveTxBackupLimit(value) {
     await enforceTransactionLimit();
 }
 
+
+// ── GIỚI HẠN LỊCH SỬ ĐĂNG NHẬP ────────────────────────────────
+function getLoginHistoryLimit() {
+    return parseInt(fbSettings?.loginHistoryLimit) || 15;
+}
+
+function updateLoginHistoryBadge(count) {
+    const limit = getLoginHistoryLimit();
+    const badge = document.getElementById("login-history-badge");
+    if (badge) badge.textContent = `${count} / ${limit}`;
+    const input = document.getElementById("login-history-limit-input");
+    if (input && document.activeElement !== input) input.value = limit;
+}
+
+function applyLoginHistoryLimit() {
+    const input = document.getElementById("login-history-limit-input");
+    const val = parseInt(input?.value);
+    if (!val || val < 5) { showToast("⚠️ Giới hạn tối thiểu là 5 lần"); return; }
+    saveLoginHistoryLimit(val);
+}
+
+async function saveLoginHistoryLimit(value) {
+    if (currentUser?.role !== "admin") {
+        showToast("❌ Chỉ Admin mới được thay đổi giới hạn lịch sử!");
+        return;
+    }
+    const limit = parseInt(value);
+    setSyncBadge("saving", "Đang lưu...");
+    await db.ref("settings/loginHistoryLimit").set(limit);
+    setSyncBadge("online", "Realtime");
+    showToast(`✅ Đã đặt giới hạn lịch sử đăng nhập: ${limit} lần`);
+    await enforceAllLoginHistoryLimits();
+}
+
+// Xóa bản ghi cũ vượt giới hạn cho TẤT CẢ user (chạy sau khi admin đổi giới hạn)
+async function enforceAllLoginHistoryLimits() {
+    const limit = getLoginHistoryLimit();
+    const snap = await db.ref("loginHistory").get();
+    const allHistory = snap.val() || {};
+    const updates = {};
+    Object.entries(allHistory).forEach(([uid, records]) => {
+        const entries = Object.entries(records || {})
+            .sort((a, b) => (a[1].loginTime || "").localeCompare(b[1].loginTime || ""));
+        if (entries.length > limit) {
+            entries.slice(0, entries.length - limit).forEach(([key]) => {
+                updates[`loginHistory/${uid}/${key}`] = null;
+            });
+        }
+    });
+    if (Object.keys(updates).length) await db.ref().update(updates);
+    console.log("[LoginHistory] Đã enforce giới hạn cho tất cả user");
+}
+
+// Xóa bản ghi cũ vượt giới hạn cho 1 user cụ thể (gọi sau mỗi lần đăng nhập mới)
+async function enforceLoginHistoryLimit(uid) {
+    const limit = getLoginHistoryLimit();
+    const snap = await db.ref(`loginHistory/${uid}`).get();
+    const records = snap.val() || {};
+    const entries = Object.entries(records)
+        .sort((a, b) => (a[1].loginTime || "").localeCompare(b[1].loginTime || ""));
+    if (entries.length <= limit) {
+        updateLoginHistoryBadge(entries.length);
+        return;
+    }
+    const updates = {};
+    entries.slice(0, entries.length - limit).forEach(([key]) => {
+        updates[`loginHistory/${uid}/${key}`] = null;
+    });
+    await db.ref().update(updates);
+    updateLoginHistoryBadge(entries.length - Object.keys(updates).length);
+}
 </script>
 </body>
 </html>

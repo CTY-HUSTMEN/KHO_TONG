@@ -186,10 +186,31 @@
 
         .trade-container { display: flex; gap: 24px; flex-wrap: wrap; }
         .form-card { background: #fff; flex: 1; min-width: 340px; padding: 28px; border-radius: 12px; border: 1px solid var(--border-light); }
-        .form-card label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px; }
-        .form-group { margin-bottom: 16px; }
-        .form-group select, .form-group input { width: 100%; padding: 10px 12px; border: 1px solid var(--border-light); border-radius: 8px; outline: none; font-size: 14px; }
-        .submit-btn { width: 100%; padding: 12px; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px; }
+        .form-card label { display: block; font-weight: 600; margin-bottom: 7px; font-size: 13.5px; line-height: 1.45; }
+        .form-group { margin-bottom: 18px; }
+        .form-group select, .form-group input { width: 100%; padding: 11px 12px; border: 1px solid var(--border-light); border-radius: 8px; outline: none; font-size: 14.5px; min-height: 44px; }
+        .submit-btn { width: 100%; padding: 13px; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px; min-height: 46px; }
+
+        /* ==== Khối tiện ích dùng chung: hint chữ nhỏ, hộp tỷ lệ quy đổi, bảng ánh xạ Sự Kiện ==== */
+        .field-hint { font-size: 12.5px; color: #64748b; margin-top: 6px; line-height: 1.55; }
+        .field-hint strong { color: #475569; }
+
+        .ratio-box { display: flex; flex-direction: column; gap: 10px; background: #f8fafc; border: 1px solid var(--border-light); border-radius: 8px; padding: 12px; }
+        .ratio-option { font-weight: 500; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13.5px; color: var(--text-dark); line-height: 1.5; cursor: pointer; }
+        .ratio-option input[type="radio"] { width: 18px; height: 18px; accent-color: var(--accent-color); cursor: pointer; flex-shrink: 0; }
+        .ratio-option input[type="number"] { width: 96px; padding: 8px 10px; border: 1px solid var(--border-light); border-radius: 6px; font-size: 14.5px; min-height: 40px; }
+
+        .event-preview-box { font-size: 13px; line-height: 1.65; color: #475569; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 12px 14px; margin-bottom: 16px; transition: background .15s, border-color .15s, color .15s; }
+
+        .btn-fill-max { white-space: nowrap; padding: 0 14px; height: 44px; border-radius: 8px; border: 1px solid #8b5cf6; background: #f5f3ff; color: #8b5cf6; font-size: 13px; font-weight: 700; cursor: pointer; flex-shrink: 0; }
+
+        .event-map-table-wrap { max-height: 380px; }
+        #tbl-event-mapping { font-size: 13px; }
+        #tbl-event-mapping th { font-size: 11.5px; }
+        #tbl-event-mapping td { padding: 9px 8px; vertical-align: top; }
+        #tbl-event-mapping .sku-code { background: #eef2ff; color: #3730a3; padding: 3px 9px; border-radius: 5px; font-family: monospace; font-weight: 700; font-size: 12.5px; white-space: nowrap; }
+        #tbl-event-mapping .sub-label { color: #94a3b8; font-size: 11.5px; display: block; margin-top: 3px; }
+        #tbl-event-mapping .btn-del-map { padding: 5px 12px; font-size: 12px; }
         .btn-green { background: var(--success); } .btn-orange { background: var(--warning); } .btn-blue { background: var(--accent-color); }
 
         .table-container { background: #fff; border-radius: 12px; border: 1px solid var(--border-light); overflow: auto; max-height: 480px; }
@@ -338,6 +359,29 @@
         @media (max-width: 880px) {
             body { height: 100vh; overflow: hidden; }
 
+            /* Chống Safari/iOS tự phóng to khi chạm vào ô nhập (font phải >= 16px) */
+            input[type="text"], input[type="number"], input[type="email"],
+            input[type="password"], select, textarea { font-size: 16px !important; }
+
+            .form-card label { font-size: 13.5px; }
+            .field-hint { font-size: 12.5px; }
+            .submit-btn { font-size: 15px; padding: 14px; }
+            .page-btn, .btn-icon, .log-filter-bar button { min-height: 40px; }
+
+            /* Hộp Tỷ Lệ Quy Đổi: xuống dòng gọn cho màn hẹp */
+            .ratio-option { font-size: 13px; align-items: flex-start; }
+            .ratio-option input[type="number"] { width: 84px; font-size: 16px !important; min-height: 42px; }
+
+            /* Nút "Điền Tối Đa" cạnh ô số lượng Sự Kiện: không co bóp, xuống dòng nếu cần */
+            #out-qty-event { min-width: 0; }
+            .btn-fill-max { font-size: 12.5px; padding: 0 10px; }
+
+            /* Bảng Ánh Xạ SKU Kho Tổng ↔ Sự Kiện: cuộn ngang an toàn, không phá layout */
+            .event-map-table-wrap { max-height: 320px; }
+            #tbl-event-mapping { font-size: 12.5px; min-width: 520px; }
+            #tbl-event-mapping th { font-size: 11px; padding: 8px 6px; }
+            #tbl-event-mapping td { padding: 8px 6px; }
+
             #mobile-topbar {
                 display: flex; align-items: center; gap: 12px;
                 background: var(--sidebar-bg); color: #fff;
@@ -421,6 +465,12 @@
             th, td { padding: 7px 8px; }
             .lbl-code { font-size: 11px; }
             .item-bundle { min-width: 60px; height: 64px; }
+
+            .form-card { padding: 14px; }
+            .form-card h2 { font-size: 17px; }
+            .ratio-option { font-size: 12.5px; }
+            .btn-fill-max { font-size: 12px; padding: 0 8px; height: 40px; }
+            #tbl-event-mapping { font-size: 12px; min-width: 480px; }
         }
     </style>
 </head>
@@ -502,6 +552,7 @@
             <li id="menu-dashboard" class="active"><a onclick="switchTab('dashboard')">📊 Dashboard Tổng</a></li>
             <li id="menu-kho-thuc-te"><a onclick="switchTab('kho-thuc-te')">🗺️ Quản Lý Vị Trí Kệ</a></li>
             <li id="menu-xuat-nhap" class="role-hide-nv"><a onclick="switchTab('xuat-nhap')">🔄 Tạo Lệnh Xuất/Nhập</a></li>
+            <li id="menu-xuat-su-kien" class="role-hide-nv"><a onclick="switchTab('xuat-su-kien')">Xuất Đi Sự Kiện</a></li>
             <li id="menu-doi-tui" class="role-hide-nv"><a onclick="switchTab('doi-tui')">🔁 Quy Đổi Túi</a></li>
             <li id="menu-kiem-kho" class="role-hide-nv"><a onclick="switchTab('kiem-kho')">✅ Kiểm Kho Thực Tế</a></li>
             <li id="menu-logs"><a onclick="switchTab('logs')">📝 Nhật Ký Giao Dịch</a></li>
@@ -644,7 +695,7 @@
                             <select id="in-target-loc" onchange="handleImportTargetChange()">
                                 <option value="WAITING">Hàng Chờ (mặc định)</option>
                             </select>
-                            <div style="font-size:11px;color:#94a3b8;margin-top:4px;">Nếu trên kệ đã có sẵn vị trí cùng SKU / cùng loại bao bì / cùng định lượng, có thể chọn để cộng dồn thẳng vào đó, hoặc để mặc định — hàng sẽ vào Hàng Chờ.</div>
+                            <div class="field-hint">Nếu trên kệ đã có sẵn vị trí cùng SKU / cùng loại bao bì / cùng định lượng, có thể chọn để cộng dồn thẳng vào đó, hoặc để mặc định — hàng sẽ vào Hàng Chờ.</div>
                         </div>
                         <button type="submit" class="submit-btn btn-green" id="btn-submit-nhap">NHẬP VÀO HÀNG CHỜ</button>
                     </form>
@@ -705,6 +756,107 @@
             </div>
         </div>
 
+        <div id="panel-xuat-su-kien" class="tab-panel role-hide-nv">
+            <h1 class="tab-title">Xuất Kho Đi Sự Kiện</h1>
+            <div class="trade-container">
+                <div class="form-card">
+                    <h2 style="color:#8b5cf6; margin-bottom:18px;">XUẤT HÀNG SANG KHO SỰ KIỆN</h2>
+                    <form id="form-xuat-su-kien">
+                        <div class="form-group">
+                            <label>① Chọn Mã Hàng (Kho Tổng) — chỉ hiện mã đã có ánh xạ Sự Kiện</label>
+                            <select id="out-product-event" onchange="updateExportEventInfo(true)" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label>② Số Lượng Sự Kiện Muốn Tạo (hệ thống sẽ tự tính số Kho Tổng cần trừ)</label>
+                            <div style="display:flex; gap:8px; align-items:stretch;">
+                                <input type="number" id="out-qty-event" min="1" value="1" required oninput="updateExportEventInfo()" style="flex:1;">
+                                <button type="button" id="btn-fill-max-event" class="btn-fill-max" onclick="fillMaxEventQty()" title="Tự điền số lượng tối đa có thể tạo với tồn hiện có">Điền Tối Đa</button>
+                            </div>
+                            <div id="out-qty-max-hint" class="field-hint"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>③ Chọn Vị Trí Xuất</label>
+                            <select id="out-loc-event" onchange="updateExportEventInfo()" required>
+                                <option value="AUTO">Tự động (Lấy từ mọi nơi)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>④ Quầy / Kho Sự Kiện Đích</label>
+                            <select id="out-target-event" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Ghi Chú</label>
+                            <input type="text" id="out-dest-event" placeholder="Vd: Chuyển hàng chuẩn bị sự kiện...">
+                        </div>
+                        <div id="event-mapping-preview" class="event-preview-box">
+                            Chọn mã hàng để xem sản phẩm tương ứng bên Sự Kiện.
+                        </div>
+                        <button type="submit" id="btn-submit-event" class="submit-btn" style="background:#8b5cf6; color:white;">XÁC NHẬN XUẤT ĐI SỰ KIỆN</button>
+                    </form>
+                </div>
+
+                <div class="form-card role-hide-tk">
+                    <h2 style="color:var(--accent-color); margin-bottom:18px;">⚙️ Bảng Ánh Xạ SKU Kho Tổng ↔ Sản Phẩm Sự Kiện</h2>
+                    <div style="font-size:12px; color:#64748b; margin-bottom:14px;">Chỉ Admin cấu hình được bảng này. Ánh xạ cho hệ thống biết 1 SKU + định lượng bên Kho Tổng tương ứng sản phẩm/phân loại nào bên Sự Kiện, và tỷ lệ quy đổi số lượng.</div>
+                    <form id="form-add-event-mapping">
+                        <div class="form-group">
+                            <label>SKU Kho Tổng</label>
+                            <input type="text" id="map-sku-khotong" list="sku-datalist" placeholder="Vd: SILICA" required autocomplete="off" oninput="updateMapUnitOptions()">
+                        </div>
+                        <div class="form-group">
+                            <label>Định Lượng (đơn vị đang lưu kho của SKU này)</label>
+                            <select id="map-donvi-khotong" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Mã Sản Phẩm Sự Kiện (productId)</label>
+                            <select id="map-product-sukien" onchange="updateMapVariantOptions()" required></select>
+                        </div>
+                        <div class="form-group" id="map-variant-group">
+                            <label>Phân Loại (Variant) — để trống nếu SP không có phân loại</label>
+                            <select id="map-variant-sukien"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Tên Hiển Thị (tuỳ chọn)</label>
+                            <input type="text" id="map-ten-hienthi" placeholder="Vd: Silica gel 10kg">
+                        </div>
+                        <div class="form-group">
+                            <label>Tỷ Lệ Quy Đổi</label>
+                            <div class="ratio-box">
+                                <label class="ratio-option">
+                                    <input type="radio" name="map-ratio-mode" value="KT_TO_SK" checked>
+                                    1 đơn vị Kho Tổng =
+                                    <input type="number" id="map-ratio-value-a" min="0.0001" step="any" value="1" onfocus="document.querySelector('input[name=map-ratio-mode][value=KT_TO_SK]').checked=true">
+                                    đơn vị Sự Kiện
+                                </label>
+                                <label class="ratio-option">
+                                    <input type="radio" name="map-ratio-mode" value="SK_TO_KT">
+                                    <input type="number" id="map-ratio-value-b" min="0.0001" step="any" value="1" onfocus="document.querySelector('input[name=map-ratio-mode][value=SK_TO_KT]').checked=true">
+                                    đơn vị Kho Tổng = 1 đơn vị Sự Kiện
+                                </label>
+                            </div>
+                        </div>
+                        <button type="submit" class="submit-btn btn-blue">+ THÊM ÁNH XẠ</button>
+                    </form>
+
+
+                    <div class="table-container event-map-table-wrap" style="margin-top:18px;">
+                        <table id="tbl-event-mapping">
+                            <thead>
+                                <tr>
+                                    <th>SKU Kho Tổng</th>
+                                    <th>Định Lượng</th>
+                                    <th>Sản Phẩm Sự Kiện</th>
+                                    <th style="text-align:center;">Tỷ Lệ</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div id="panel-doi-tui" class="tab-panel role-hide-nv">
             <h1 class="tab-title">Quy Đổi Túi Gốc (Xám) → Túi Đóng Sẵn (Trắng)</h1>
             <div class="trade-container">
@@ -727,14 +879,14 @@
                         <div class="form-group">
                             <label>Số Túi Muốn Chuyển Đổi (Túi Đóng Sẵn - Trắng)</label>
                             <input type="number" id="cv-qty" min="1" oninput="updateConversionPreview()" required>
-                            <div id="cv-max-hint" style="font-size:11px;color:#94a3b8;margin-top:4px;"></div>
+                            <div id="cv-max-hint" class="field-hint"></div>
                         </div>
                         <div class="form-group">
                             <label>Vị Trí Nhập Túi Sau Quy Đổi</label>
                             <select id="cv-target-loc" onchange="updateConversionPreview()">
                                 <option value="WAITING">Hàng Chờ (mặc định)</option>
                             </select>
-                            <div style="font-size:11px;color:#94a3b8;margin-top:4px;">Chọn 1 vị trí trên kệ đã có sẵn túi cùng mã để cộng dồn số lượng vào đó, hoặc để mặc định — túi mới sẽ vào Hàng Chờ.</div>
+                            <div class="field-hint">Chọn 1 vị trí trên kệ đã có sẵn túi cùng mã để cộng dồn số lượng vào đó, hoặc để mặc định — túi mới sẽ vào Hàng Chờ.</div>
                         </div>
                         <div id="cv-preview" style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; padding:12px 14px; font-size:13px; line-height:1.7; margin-bottom:14px; color:#0c4a6e;">
                             Chọn SKU và nhập số lượng để xem kết quả quy đổi.
@@ -1009,6 +1161,19 @@ const db   = firebase.database();
 const secondaryApp  = firebase.initializeApp(firebaseConfig, "Secondary");
 const secondaryAuth = secondaryApp.auth();
 
+// ===== Kết nối tới Firebase KHO SỰ KIỆN (dự án riêng, rule mở hoàn toàn) =====
+const sukienConfig = {
+    apiKey:            "AIzaSyBtdk8zuVGkueYcRurRIAWIm_AlTrrGg9Y",
+    authDomain:        "su-kien-fe294.firebaseapp.com",
+    databaseURL:       "https://su-kien-fe294-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId:         "su-kien-fe294",
+    storageBucket:     "su-kien-fe294.firebasestorage.app",
+    messagingSenderId: "863152941656",
+    appId:             "1:863152941656:web:f4adea7c33d941a9d8b82d"
+};
+const sukienApp = firebase.initializeApp(sukienConfig, "SuKien");
+const sukienDb  = sukienApp.database();
+
 let currentSessionId = sessionStorage.getItem('mySessionId');
 const isFreshAppOpen  = !currentSessionId; // true = tab/app vừa mở lại từ đầu
 if (!currentSessionId) {
@@ -1058,6 +1223,13 @@ let fbRacks       = {};
 let fbPackagingTypes = {};     
 let fbLocations   = {};       
 let fbProducts    = {};        
+let fbSukienKho      = {};    // dữ liệu 'kho' bên Firebase Sự Kiện (mọi quầy)
+let fbSukienProducts = {};    // dữ liệu 'products' bên Firebase Sự Kiện (tên tuỳ chỉnh)
+const EVENT_PRODUCT_NAMES = {
+    TUI_HUT_AM: 'Túi hút ẩm', TUI_TOA_HUONG: 'Túi tỏa hương', HUT_MUI_TU_LANH: 'Hút mùi tủ lạnh',
+    TUI_HUT_MUI_GIAY: 'Túi hút mùi giày', SILICA: 'Silica', HUT_KHI_GA: 'Túi hút khí ga',
+    COMBO_1: 'Combo 1', COMBO_2: 'Combo 2', COMBO_CUSTOM: 'Combo tùy chỉnh'
+};
 let fbWaiting     = {};        
 let fbTransactions = {};      
 let fbSettings    = {};        
@@ -1361,7 +1533,7 @@ const listeners = {};
                         enforceTransactionLimit();
                     }
                 }
-            if (p === 'settings')     { fbSettings = val; updateTxLimitUI(); updateLoginHistoryBadge(0); }
+            if (p === 'settings')     { fbSettings = val; updateTxLimitUI(); updateLoginHistoryBadge(0); renderEventMappingTable(); }
             if (p === 'users')        { fbUsers = val; renderUserTable(); }
             if (p === 'conversionRatios') fbConversionRatios = val;
             if (p === 'packagingTypes') {
@@ -1373,6 +1545,17 @@ const listeners = {};
     });
 
     startPresenceHeartbeat();
+
+    // Lắng nghe dữ liệu bên Firebase Sự Kiện (đọc công khai, không cần auth)
+    sukienDb.ref('kho').on('value', snap => {
+        fbSukienKho = snap.val() || {};
+        renderEventTargetOptions();
+        renderMapProductOptions();
+    });
+    sukienDb.ref('products').on('value', snap => {
+        fbSukienProducts = snap.val() || {};
+        renderMapProductOptions();
+    });
 
     db.ref('presence').on('value', snap => {
         fbOnlineMap = snap.val() || {};
@@ -1623,6 +1806,8 @@ function renderSelectBoxes() {
         const opt = `<option value="${sku}">${sku} (Tổng tồn: ${allMap.get(sku)})</option>`;
         if (kkUnitSelect) kkUnitSelect.innerHTML += opt;
     });
+
+    renderEventProductOptions();
 }
 
 function renderConversionRatioTable() {
@@ -3175,6 +3360,473 @@ async function handleExportForm(e, mode) {
 document.getElementById('form-xuat-chuan').addEventListener('submit', e => handleExportForm(e, 'chuan'));
 document.getElementById('form-xuat-mau').addEventListener('submit', e => handleExportForm(e, 'mau'));
 
+// ==========================================================================
+// MODULE: XUẤT KHO ĐI SỰ KIỆN (đồng bộ sang Firebase "su-kien-fe294")
+// ==========================================================================
+
+function getEventProductName(id) {
+    return (fbSukienProducts[id] && fbSukienProducts[id].name) || EVENT_PRODUCT_NAMES[id] || id;
+}
+
+function getItemUnit(item) {
+    return item.unit || (item.type === 'bg-clear-white' ? 'túi' : (item.type === 'carton-bulk' ? 'cái' : 'gói'));
+}
+
+// Dò toàn bộ cây kho bên Sự Kiện (gộp mọi quầy) để tìm các productId/variant đang tồn tại
+function getEventProductTree() {
+    const tree = {};
+    Object.values(fbSukienKho).forEach(quayObj => {
+        Object.entries(quayObj || {}).forEach(([prodId, val]) => {
+            if (!tree[prodId]) tree[prodId] = new Set();
+            if (val && typeof val === 'object' && !('stock' in val)) {
+                Object.keys(val).forEach(variant => tree[prodId].add(variant));
+            } else {
+                tree[prodId].add('');
+            }
+        });
+    });
+    return tree;
+}
+
+// Quy đổi số lượng Kho Tổng -> Sự Kiện tuỳ theo chiều tỷ lệ đã cấu hình
+function computeConvertedQty(mapping, qtyKhoTong) {
+    const ratio = mapping.ratioValue || 1;
+    if (mapping.ratioMode === 'SK_TO_KT') return qtyKhoTong / ratio;
+    return qtyKhoTong * ratio; // mặc định KT_TO_SK
+}
+
+function formatRatioText(mapping) {
+    const ratio = mapping.ratioValue || 1;
+    return mapping.ratioMode === 'SK_TO_KT'
+        ? `${ratio} KT = 1 SK`
+        : `1 KT = ${ratio} SK`;
+}
+
+window.renderEventTargetOptions = function() {
+    const sel = document.getElementById('out-target-event');
+    if (!sel) return;
+    const prevVal = sel.value;
+    const names = Object.keys(fbSukienKho).sort();
+    sel.innerHTML = names.length ? '' : '<option value="">-- Chưa có quầy nào bên Sự Kiện --</option>';
+    names.forEach(name => sel.innerHTML += `<option value="${name}">${name}</option>`);
+    if (names.includes(prevVal)) sel.value = prevVal;
+};
+
+window.renderMapProductOptions = function() {
+    const sel = document.getElementById('map-product-sukien');
+    if (!sel) return;
+    const tree = getEventProductTree();
+    const prevVal = sel.value;
+    sel.innerHTML = '<option value="">-- Chọn sản phẩm Sự Kiện --</option>';
+    Object.keys(tree).sort().forEach(id => {
+        sel.innerHTML += `<option value="${id}">${getEventProductName(id)} (${id})</option>`;
+    });
+    if (prevVal && tree[prevVal]) sel.value = prevVal;
+    updateMapVariantOptions();
+};
+
+window.updateMapVariantOptions = function() {
+    const prodId = document.getElementById('map-product-sukien')?.value;
+    const variantSel = document.getElementById('map-variant-sukien');
+    const group = document.getElementById('map-variant-group');
+    if (!variantSel || !group) return;
+    variantSel.innerHTML = '';
+    if (!prodId) { group.style.display = 'none'; return; }
+    const tree = getEventProductTree();
+    const variants = Array.from(tree[prodId] || []).filter(v => v !== '').sort();
+    if (variants.length === 0) {
+        group.style.display = 'none';
+        variantSel.innerHTML = '<option value="">(Không có phân loại)</option>';
+    } else {
+        group.style.display = 'block';
+        variantSel.innerHTML = '<option value="">-- Chọn phân loại --</option>' +
+            variants.map(v => `<option value="${v}">${v}</option>`).join('');
+    }
+};
+
+// Populate dropdown "Định Lượng" cho form ánh xạ, dựa trên các đơn vị SKU đó đang thực có trong kho
+// + luôn gợi ý sẵn 3 đơn vị chuẩn (gói/túi/cái) để có thể ánh xạ trước khi có tồn kho thực tế
+window.updateMapUnitOptions = function() {
+    const sku = document.getElementById('map-sku-khotong')?.value.trim();
+    const sel = document.getElementById('map-donvi-khotong');
+    if (!sel) return;
+    const prevVal = sel.value;
+    const present = sku ? Array.from(getUnitsPresentForSku(sku)) : [];
+    const units = Array.from(new Set([...present, 'gói', 'túi', 'cái'])).sort();
+    sel.innerHTML = units.map(u => `<option value="${u}">${u}${present.includes(u) ? ' (đang có tồn)' : ''}</option>`).join('');
+    if (units.includes(prevVal)) sel.value = prevVal;
+};
+
+window.renderEventProductOptions = function() {
+    const sel = document.getElementById('out-product-event');
+    if (!sel) return;
+    const prevVal = sel.value;
+    const mapping = (fbSettings && fbSettings.eventSkuMapping) || {};
+
+    sel.innerHTML = '<option value="">-- Chọn SKU + Định Lượng đã có ánh xạ Sự Kiện --</option>';
+    Object.values(mapping)
+        .slice()
+        .sort((a, b) => naturalSortSku(a.skuKhoTong, b.skuKhoTong) || (a.donViKhoTong || '').localeCompare(b.donViKhoTong || ''))
+        .forEach(m => {
+            const stock = getStockByUnitMap([m.donViKhoTong]).get(m.skuKhoTong) || 0;
+            const value = `${m.skuKhoTong}||${m.donViKhoTong}`;
+            sel.innerHTML += `<option value="${value}">${m.skuKhoTong} (${m.donViKhoTong}) — Tồn: ${stock}</option>`;
+        });
+
+    if (prevVal) sel.value = prevVal;
+    updateExportEventInfo(true); // build lại danh sách Vị Trí Xuất theo tồn mới nhất
+};
+
+function getEventMappingForSkuUnit(sku, unit) {
+    const mapping = (fbSettings && fbSettings.eventSkuMapping) || {};
+    const entry = Object.entries(mapping).find(([id, m]) => m.skuKhoTong === sku && m.donViKhoTong === unit);
+    return entry ? { id: entry[0], ...entry[1] } : null;
+}
+
+function updateExportEventLocations(sku, unit) {
+    const locSelect = document.getElementById('out-loc-event');
+    if (!locSelect) return;
+    const prevVal = locSelect.value; // giữ lại lựa chọn hiện tại nếu vẫn còn hợp lệ
+    const validValues = ['AUTO'];
+    locSelect.innerHTML = '<option value="AUTO">Tự động (Lấy từ mọi nơi)</option>';
+    if (!sku) return;
+    Object.entries(fbWaiting).forEach(([wId, w]) => {
+        if (w.sku === sku && getItemUnit(w) === unit) {
+            locSelect.innerHTML += `<option value="${wId}">Khu Hàng Chờ (Tồn: ${w.qty})</option>`;
+            validValues.push(wId);
+        }
+    });
+    Object.entries(fbLocations).forEach(([locId, loc]) => {
+        if (loc.sku === sku && getItemUnit(loc) === unit) {
+            const label = `${loc.rack}-${loc.tier}-${loc.slot}`;
+            locSelect.innerHTML += `<option value="${locId}">Kệ ${label} (Tồn: ${loc.qty})</option>`;
+            validValues.push(locId);
+        }
+    });
+    if (validValues.includes(prevVal)) locSelect.value = prevVal;
+}
+
+// Tồn Kho Tổng hiện có thể dùng để xuất, tuỳ theo vị trí đã chọn (AUTO = gộp toàn kho)
+function getAvailableKTForExport(sku, unit, selectedLoc) {
+    if (!sku) return 0;
+    if (selectedLoc && selectedLoc !== 'AUTO') {
+        const item = fbWaiting[selectedLoc] || fbLocations[selectedLoc];
+        return item ? (item.qty || 0) : 0;
+    }
+    return getStockByUnitMap([unit]).get(sku) || 0;
+}
+
+// Với tồn Kho Tổng đang có, tính số lượng Sự Kiện tối đa có thể tạo ra theo tỷ lệ quy đổi
+function computeMaxEventQtyFromKT(mapping, availableKT) {
+    const ratio = mapping.ratioValue || 1;
+    if (mapping.ratioMode === 'SK_TO_KT') return Math.floor(availableKT / ratio);
+    return Math.floor(availableKT * ratio); // KT_TO_SK: dùng hết availableKT sẽ ceil ra đúng availableKT*ratio
+}
+
+// skuChanged=true chỉ khi người dùng vừa đổi Mã Hàng — lúc đó mới build lại danh sách Vị Trí,
+// để gõ số lượng không làm mất lựa chọn Vị Trí đang chọn.
+window.updateExportEventInfo = function(skuChanged) {
+    const raw = document.getElementById('out-product-event')?.value || '';
+    const [sku, unit] = raw.split('||');
+    const qtySK = parseInt(document.getElementById('out-qty-event')?.value) || 0;
+    const selectedLoc = document.getElementById('out-loc-event')?.value || 'AUTO';
+
+    if (skuChanged) updateExportEventLocations(sku, unit);
+
+    const preview = document.getElementById('event-mapping-preview');
+    const qtyInput = document.getElementById('out-qty-event');
+    const maxHint = document.getElementById('out-qty-max-hint');
+    const submitBtn = document.getElementById('btn-submit-event');
+    if (!preview) return;
+
+    const setPreviewStyle = (bg, border, color) => {
+        preview.style.background = bg; preview.style.borderColor = border; preview.style.color = color;
+    };
+
+    if (!sku) {
+        preview.innerHTML = 'Chọn mã hàng để xem sản phẩm tương ứng bên Sự Kiện.';
+        setPreviewStyle('#f8fafc', '#cbd5e1', '#64748b');
+        if (maxHint) maxHint.textContent = '';
+        if (qtyInput) qtyInput.removeAttribute('max');
+        if (submitBtn) submitBtn.disabled = true;
+        return;
+    }
+
+    const m = getEventMappingForSkuUnit(sku, unit);
+    if (!m) {
+        preview.innerHTML = `⚠️ SKU <b>${sku} (${unit})</b> chưa được cấu hình ánh xạ sang Sự Kiện. Vui lòng nhờ Admin thêm ở bảng ánh xạ bên dưới.`;
+        setPreviewStyle('#fff7ed', '#fdba74', '#9a3412');
+        if (maxHint) maxHint.textContent = '';
+        if (qtyInput) qtyInput.removeAttribute('max');
+        if (submitBtn) submitBtn.disabled = true;
+        return;
+    }
+
+    const availableKT = getAvailableKTForExport(sku, unit, selectedLoc);
+    const maxQtySK = computeMaxEventQtyFromKT(m, availableKT);
+
+    // Tính toán ngược: Từ số lượng Sự Kiện nhập vào, suy ra số Kho Tổng cần trừ
+    const ratio = m.ratioValue || 1;
+    let qtyKT = 0;
+    if (m.ratioMode === 'SK_TO_KT') {
+        qtyKT = qtySK * ratio; // Ví dụ: 1 SK * 15 = 15 Kho Tổng
+    } else {
+        qtyKT = Math.ceil(qtySK / ratio); // Ví dụ: Tỷ lệ 1 KT = 2 SK -> tạo 3 SK mất ceil(1.5) = 2 Kho Tổng
+    }
+
+    const enough = qtySK > 0 && qtyKT <= availableKT;
+    const variantLabel = m.sukienVariant ? ` — Phân loại: <b>${m.sukienVariant}</b>` : '';
+    const locLabel = selectedLoc === 'AUTO' ? 'toàn kho' : 'vị trí đã chọn';
+
+    preview.innerHTML = `➡️ Sẽ cộng vào Sự Kiện: <b>${getEventProductName(m.sukienProductId)}</b> (${m.sukienProductId})${variantLabel}<br>`
+        + `Tỷ lệ: <b>${formatRatioText(m)}</b><br>`
+        + `Số lượng Sự Kiện tạo ra: <b>${qtySK}</b><br>`
+        + `Hệ thống tự động trừ Kho Tổng: <b>${qtyKT} ${unit}</b> (tồn ${locLabel}: ${availableKT} ${unit})`
+        + (enough ? '' : `<br>❌ <b>Không đủ tồn kho!</b> Tối đa tạo được <b>${maxQtySK}</b> Sự Kiện với tồn hiện có.`);
+
+    if (enough) setPreviewStyle('#f0fdf4', '#86efac', '#166534');
+    else setPreviewStyle('#fef2f2', '#fca5a5', '#991b1b');
+
+    if (maxHint) {
+        maxHint.textContent = maxQtySK > 0
+            ? `Tối đa có thể tạo với tồn hiện tại: ${maxQtySK} Sự Kiện`
+            : '⚠️ Không còn tồn Kho Tổng để xuất đi Sự Kiện';
+    }
+    if (qtyInput) { if (maxQtySK > 0) qtyInput.setAttribute('max', maxQtySK); else qtyInput.removeAttribute('max'); }
+    if (submitBtn) submitBtn.disabled = !enough;
+};
+
+// Tự động điền số lượng Sự Kiện tối đa có thể tạo dựa trên tồn Kho Tổng hiện có
+window.fillMaxEventQty = function() {
+    const raw = document.getElementById('out-product-event')?.value || '';
+    const [sku, unit] = raw.split('||');
+    if (!sku) { showToast('❌ Vui lòng chọn mã hàng trước!'); return; }
+    const m = getEventMappingForSkuUnit(sku, unit);
+    if (!m) return;
+    const selectedLoc = document.getElementById('out-loc-event')?.value || 'AUTO';
+    const availableKT = getAvailableKTForExport(sku, unit, selectedLoc);
+    const maxQtySK = computeMaxEventQtyFromKT(m, availableKT);
+    if (maxQtySK <= 0) { showToast('⚠️ Không còn tồn Kho Tổng để xuất đi Sự Kiện!'); return; }
+    document.getElementById('out-qty-event').value = maxQtySK;
+    updateExportEventInfo();
+};
+
+document.getElementById('form-xuat-su-kien').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const raw = document.getElementById('out-product-event').value;
+    const [sku, unit] = raw.split('||');
+    const selectedLoc = document.getElementById('out-loc-event').value;
+    const targetQuay = document.getElementById('out-target-event').value;
+    const note = document.getElementById('out-dest-event').value.trim();
+
+    // Số nhập vào bây giờ đại diện cho số lượng Kho Sự Kiện
+    let qtySK = parseInt(document.getElementById('out-qty-event').value);
+
+    if (!sku || qtySK < 1) return;
+    if (!targetQuay) { showToast('❌ Vui lòng chọn quầy/kho đích bên Sự Kiện!'); return; }
+
+    const mapping = getEventMappingForSkuUnit(sku, unit);
+    if (!mapping) { showToast(`❌ SKU [${sku} (${unit})] chưa có ánh xạ sang Sự Kiện!`); return; }
+
+    // Tính số lượng xuất (cần trừ) tại Kho Tổng
+    const ratio = mapping.ratioValue || 1;
+    let qtyToExport = 0;
+    if (mapping.ratioMode === 'SK_TO_KT') {
+        qtyToExport = qtySK * ratio;
+    } else {
+        qtyToExport = Math.ceil(qtySK / ratio);
+    }
+    
+    const convertedQty = qtySK; // Đây là số lượng cộng thẳng vào Kho Sự Kiện
+    const variantLabel = mapping.sukienVariant ? ` (${mapping.sukienVariant})` : '';
+
+    // Kiểm tra tồn Kho Tổng xem có đủ số lượng (qtyToExport) bị trừ đi không
+    if (selectedLoc !== 'AUTO') {
+        const item = fbWaiting[selectedLoc] || fbLocations[selectedLoc];
+        if (!item || item.qty < qtyToExport) {
+            showToast(`❌ Vị trí bạn chọn chỉ có ${item ? item.qty : 0} sản phẩm, không đủ để tạo ${convertedQty} Sự Kiện (Cần trừ tới ${qtyToExport} ${unit})!`);
+            return;
+        }
+    } else {
+        const currentTotal = getStockByUnitMap([unit]).get(sku) || 0;
+        if (currentTotal < qtyToExport) {
+            showToast(`❌ Tổng tồn [${sku} (${unit})] chỉ còn ${currentTotal}, không đủ để tạo ${convertedQty} Sự Kiện (Cần trừ tới ${qtyToExport} ${unit})!`);
+            return;
+        }
+    }
+
+    if (!confirm(`🎪 XUẤT ĐI SỰ KIỆN\n\nMã hàng kho tổng: ${sku} (${unit})\nQuầy đích: ${targetQuay}\nSản phẩm Sự Kiện: ${getEventProductName(mapping.sukienProductId)}${variantLabel}\nTỷ lệ: ${formatRatioText(mapping)}\n\nSố lượng Sự Kiện tạo ra: ${convertedQty}\nSỐ LƯỢNG BỊ TRỪ Ở KHO TỔNG: ${qtyToExport} ${unit}\nGhi chú: ${note || '(không có)'}\n\nXác nhận thao tác này?`)) return;
+
+    // Khoá nút để tránh bấm xuất trùng 2 lần trong lúc đang lưu
+    const submitBtnEl = document.getElementById('btn-submit-event');
+    const submitBtnOrigText = submitBtnEl ? submitBtnEl.textContent : '';
+    if (submitBtnEl) { submitBtnEl.disabled = true; submitBtnEl.textContent = 'ĐANG XỬ LÝ...'; }
+
+    setSyncBadge('saving', 'Đang lưu...');
+
+    const eventPath = mapping.sukienVariant
+        ? `kho/${targetQuay}/${mapping.sukienProductId}/${mapping.sukienVariant}`
+        : `kho/${targetQuay}/${mapping.sukienProductId}`;
+    const txId = generateTransID('SK');
+
+    // BƯỚC 1: cộng tồn bên Sự Kiện trước (DB khác, không auth, ít khi lỗi).
+    try {
+        await sukienDb.ref(eventPath).transaction(current => {
+            if (current === null) current = { stock: 0, daBan: 0, daTang: 0 };
+            current.stock = (current.stock || 0) + convertedQty;
+            return current;
+        });
+        await sukienDb.ref('logs/nhap_kho').push({
+            action: 'ADD', kho: targetQuay, product: mapping.sukienProductId,
+            variant: mapping.sukienVariant || 'Không', quantity: convertedQty,
+            time: Date.now(), source: 'KHO_TONG', txId, note: note || ''
+        });
+    } catch (err) {
+        setSyncBadge('online', 'Realtime');
+        showToast(`❌ Lỗi khi cộng hàng sang Sự Kiện, ĐÃ HỦY thao tác (kho tổng chưa bị trừ): ${err.message}`, 5000);
+        if (submitBtnEl) { submitBtnEl.disabled = false; submitBtnEl.textContent = submitBtnOrigText; }
+        return;
+    }
+
+    // BƯỚC 2: trừ kho tổng (giống logic xuất kho chuẩn, chỉ lấy đúng định lượng đã chọn)
+    const updates = {};
+    let remaining = qtyToExport;
+
+    if (selectedLoc !== 'AUTO') {
+        if (fbWaiting[selectedLoc]) {
+            const w = fbWaiting[selectedLoc];
+            if (w.qty <= remaining) updates[`waiting/${selectedLoc}`] = null;
+            else updates[`waiting/${selectedLoc}/qty`] = w.qty - remaining;
+        } else if (fbLocations[selectedLoc]) {
+            const loc = fbLocations[selectedLoc];
+            const oldSlot = findSlotOfLocation(selectedLoc);
+            if (loc.qty <= remaining) {
+                updates[`locations/${selectedLoc}`] = null;
+                if (oldSlot) {
+                    updates[`racks/${oldSlot.rackId}/${oldSlot.tierId}/${oldSlot.slotId}/locationId`] = null;
+                    updates[`racks/${oldSlot.rackId}/${oldSlot.tierId}/${oldSlot.slotId}/used`] = 0;
+                }
+            } else {
+                updates[`locations/${selectedLoc}/qty`] = loc.qty - remaining;
+                if (oldSlot) updates[`racks/${oldSlot.rackId}/${oldSlot.tierId}/${oldSlot.slotId}/used`] = loc.qty - remaining;
+            }
+        }
+    } else {
+        Object.entries(fbWaiting).forEach(([wId, w]) => {
+            if (remaining <= 0 || w.sku !== sku || getItemUnit(w) !== unit) return;
+            if (w.qty <= remaining) { updates[`waiting/${wId}`] = null; remaining -= w.qty; }
+            else { updates[`waiting/${wId}/qty`] = w.qty - remaining; remaining = 0; }
+        });
+        Object.entries(fbLocations).forEach(([locId, loc]) => {
+            if (remaining <= 0 || loc.sku !== sku || getItemUnit(loc) !== unit) return;
+            const oldSlot = findSlotOfLocation(locId);
+            if (loc.qty <= remaining) {
+                updates[`locations/${locId}`] = null;
+                if (oldSlot) {
+                    updates[`racks/${oldSlot.rackId}/${oldSlot.tierId}/${oldSlot.slotId}/locationId`] = null;
+                    updates[`racks/${oldSlot.rackId}/${oldSlot.tierId}/${oldSlot.slotId}/used`] = 0;
+                }
+                remaining -= loc.qty;
+            } else {
+                updates[`locations/${locId}/qty`] = loc.qty - remaining;
+                if (oldSlot) updates[`racks/${oldSlot.rackId}/${oldSlot.tierId}/${oldSlot.slotId}/used`] = loc.qty - remaining;
+                remaining = 0;
+            }
+        });
+    }
+
+    updates[`transactions/${txId}`] = {
+        type: 'EXPORT_EVENT', sku, unit, qty: -qtyToExport, from: 'Warehouse',
+        to: `Sự Kiện - ${targetQuay}`, note: note || '',
+        eventProduct: mapping.sukienProductId, eventVariant: mapping.sukienVariant || '',
+        eventQty: convertedQty,
+        time: new Date().toISOString(), user: currentUser.email
+    };
+
+    try {
+        await db.ref().update(updates);
+        showToast(`📤 Đã xuất ${qtyToExport} [${sku} (${unit})] sang Sự Kiện (${targetQuay}) thành công!`);
+    } catch (err) {
+        showToast(`⚠️ Đã cộng hàng bên Sự Kiện NHƯNG LỖI khi trừ kho tổng: ${err.message}. Vui lòng vào "Tạo Lệnh Xuất/Nhập" để trừ thủ công cho khớp!`, 7000);
+    }
+
+    document.getElementById('out-dest-event').value = '';
+    if (submitBtnEl) { submitBtnEl.disabled = false; submitBtnEl.textContent = submitBtnOrigText; }
+    renderEventProductOptions(); // làm mới danh sách tồn kho + tự tính lại số tối đa có thể xuất tiếp theo
+});
+
+document.getElementById('form-add-event-mapping').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (currentUser?.role !== 'admin') { showToast('❌ Chỉ Admin mới được thêm ánh xạ!'); return; }
+
+    const skuKhoTong = document.getElementById('map-sku-khotong').value.trim();
+    const donViKhoTong = document.getElementById('map-donvi-khotong').value;
+    const sukienProductId = document.getElementById('map-product-sukien').value;
+    const sukienVariant = document.getElementById('map-variant-sukien').value.trim();
+    const tenHienThi = document.getElementById('map-ten-hienthi').value.trim();
+    const ratioMode = document.querySelector('input[name="map-ratio-mode"]:checked')?.value || 'KT_TO_SK';
+    const ratioValue = parseFloat(
+        ratioMode === 'SK_TO_KT'
+            ? document.getElementById('map-ratio-value-b').value
+            : document.getElementById('map-ratio-value-a').value
+    );
+
+    if (!skuKhoTong || !donViKhoTong || !sukienProductId || !(ratioValue > 0)) {
+        showToast('❌ Vui lòng điền đủ SKU, định lượng, sản phẩm Sự Kiện và tỷ lệ quy đổi hợp lệ!');
+        return;
+    }
+
+    const newKey = db.ref('settings/eventSkuMapping').push().key;
+    try {
+        await db.ref(`settings/eventSkuMapping/${newKey}`).set({
+            skuKhoTong, donViKhoTong, sukienProductId, sukienVariant: sukienVariant || '',
+            tenHienThi: tenHienThi || '', ratioMode, ratioValue
+        });
+        showToast('✔️ Đã thêm ánh xạ mới!');
+        document.getElementById('form-add-event-mapping').reset();
+        updateMapUnitOptions();
+        updateMapVariantOptions();
+    } catch (err) {
+        showToast('❌ Lỗi khi lưu ánh xạ: ' + err.message);
+    }
+});
+
+window.deleteEventMapping = async function(id) {
+    if (currentUser?.role !== 'admin') { showToast('❌ Chỉ Admin mới được xóa ánh xạ!'); return; }
+    if (!confirm('Xóa ánh xạ này? Các SKU liên quan sẽ không xuất được sang Sự Kiện nữa cho tới khi thêm lại.')) return;
+    try {
+        await db.ref(`settings/eventSkuMapping/${id}`).remove();
+        showToast('🗑️ Đã xóa ánh xạ.');
+    } catch (err) {
+        showToast('❌ Lỗi khi xóa: ' + err.message);
+    }
+};
+
+window.renderEventMappingTable = function() {
+    const tbody = document.querySelector('#tbl-event-mapping tbody');
+    if (!tbody) return;
+    const isAdmin = currentUser?.role === 'admin';
+    const mapping = (fbSettings && fbSettings.eventSkuMapping) || {};
+    const entries = Object.entries(mapping).sort((a, b) => naturalSortSku(a[1].skuKhoTong, b[1].skuKhoTong));
+
+    if (!entries.length) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#94a3b8; padding:16px;">Chưa có ánh xạ nào</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = entries.map(([id, m]) => {
+        const variantLabel = m.sukienVariant ? ` — ${m.sukienVariant}` : '';
+        const name = m.tenHienThi || getEventProductName(m.sukienProductId);
+        return `<tr>
+            <td><span class="sku-code">${m.skuKhoTong}</span></td>
+            <td>${m.donViKhoTong || '—'}</td>
+            <td>${name}<span class="sub-label">${m.sukienProductId}${variantLabel}</span></td>
+            <td style="text-align:center;">${formatRatioText(m)}</td>
+            <td style="text-align:center;">${isAdmin ? `<button class="btn-del-rack btn-del-map" onclick="deleteEventMapping('${id}')">🗑 Xóa</button>` : '—'}</td>
+        </tr>`;
+    }).join('');
+};
+
 window.updateKKSystemQty = function(tab) {
     const sku  = document.getElementById('kk-product-unit').value;
     const typeSel = document.getElementById('kk-unit-type');
@@ -3248,102 +3900,6 @@ window.updateKKDiffPreview = function() {
         valEl.textContent = ` LỆCH ${-diff} SO VỚI KHO`;
     }
 };
-
-document.getElementById('form-convert').addEventListener('submit', async e => {
-    e.preventDefault();
-    const sku = document.getElementById('cv-sku').value;
-    const bagsWanted = parseInt(document.getElementById('cv-qty').value);
-    const ratio = getRatioBySku(sku);
-    const targetLocId = document.getElementById('cv-target-loc')?.value || 'WAITING';
-
-    if (!sku || !ratio) { showToast('❌ Vui lòng chọn SKU đã có định mức quy đổi'); return; }
-    if (!bagsWanted || bagsWanted < 1) return;
-
-    const stock = getStockByUnitMap(['gói']).get(sku) || 0;
-    const maxBags = Math.floor(stock / ratio);
-
-    if (bagsWanted > maxBags) {
-        showToast(`❌ Tồn dạng gói của [${sku}] chỉ đủ tạo tối đa ${maxBags} túi (cần ${bagsWanted * ratio} gói, hiện chỉ có ${stock} gói)!`);
-        return;
-    }
-
-    const bagsCreated = bagsWanted;
-    const goiTru = bagsCreated * ratio;
-
-    const useTargetLoc = targetLocId !== 'WAITING' && fbLocations[targetLocId] && fbLocations[targetLocId].sku === sku;
-    const targetSlot = useTargetLoc ? findSlotOfLocation(targetLocId) : null;
-    const targetLabelShort = targetSlot ? `${targetSlot.rackId}-${targetSlot.tierId}-${targetSlot.slotId}` : targetLocId;
-    const confirmTargetLine = useTargetLoc
-        ? `Nhập vào: Vị trí ${targetLabelShort} (cộng dồn)`
-        : `Nhập vào: Hàng Chờ`;
-
-    if (!confirm(`🔁 XÁC NHẬN QUY ĐỔI\n\nSKU: ${sku}\nTrừ: ${goiTru} gói\nTạo ra: ${bagsCreated} túi đóng sẵn (trắng)\n${confirmTargetLine}\n\nXác nhận thao tác này?`)) {
-        return;
-    }
-
-    setSyncBadge('saving', 'Đang lưu...');
-    const updates = {};
-    let remaining = goiTru;
-
-    const getItemUnit = (item) => item.unit || (item.type === 'bg-clear-white' ? 'túi' : (item.type === 'carton-bulk' ? 'cái' : 'gói'));
-
-    Object.entries(fbWaiting).forEach(([wId, w]) => {
-        if (remaining <= 0 || w.sku !== sku || getItemUnit(w) !== 'gói') return;
-        if (w.qty <= remaining) {
-            updates[`waiting/${wId}`] = null;
-            remaining -= w.qty;
-        } else {
-            updates[`waiting/${wId}/qty`] = w.qty - remaining;
-            remaining = 0;
-        }
-    });
-
-    Object.entries(fbLocations).forEach(([locId, loc]) => {
-        if (remaining <= 0 || loc.sku !== sku || getItemUnit(loc) !== 'gói') return;
-        const oldSlot = findSlotOfLocation(locId);
-        if (loc.qty <= remaining) {
-            updates[`locations/${locId}`] = null;
-            if (oldSlot) {
-                updates[`racks/${oldSlot.rackId}/${oldSlot.tierId}/${oldSlot.slotId}/locationId`] = null;
-                updates[`racks/${oldSlot.rackId}/${oldSlot.tierId}/${oldSlot.slotId}/used`] = 0;
-            }
-            remaining -= loc.qty;
-        } else {
-            updates[`locations/${locId}/qty`] = loc.qty - remaining;
-            if (oldSlot) updates[`racks/${oldSlot.rackId}/${oldSlot.tierId}/${oldSlot.slotId}/used`] = loc.qty - remaining;
-            remaining = 0;
-        }
-    });
-
-    let targetLabel = 'Hàng Chờ';
-    if (useTargetLoc) {
-        const targetLoc = fbLocations[targetLocId];
-        const newQty = (targetLoc.qty || 0) + bagsCreated;
-        updates[`locations/${targetLocId}/qty`] = newQty;
-        if (targetSlot) {
-            updates[`racks/${targetSlot.rackId}/${targetSlot.tierId}/${targetSlot.slotId}/used`] = newQty;
-        }
-        targetLabel = `vị trí ${targetLabelShort} (tổng: ${newQty} túi)`;
-    } else {
-        const waitId = 'WAIT' + Date.now();
-        updates[`waiting/${waitId}`] = {
-            sku, qty: bagsCreated, type: 'bg-clear-white', unit: 'túi', 
-            status: 'waiting', createdAt: new Date().toISOString()
-        };
-    }
-
-    const txId = generateTransID('CV');
-    updates[`transactions/${txId}`] = {
-        type: 'CONVERT', sku, qty: -goiTru,
-        note: `Quy đổi ${goiTru} gói → ${bagsCreated} túi đóng sẵn (định mức ${ratio} gói/túi) → ${targetLabel}`,
-        time: new Date().toISOString(), user: currentUser.email
-    };
-
-    await db.ref().update(updates);
-    document.getElementById('cv-qty').value = '';
-    showToast(`✅ Đã quy đổi ${goiTru} gói [${sku}] → ${bagsCreated} túi đóng sẵn (${targetLabel})`);
-});
-
 
 document.getElementById('form-kiemkho-unit').addEventListener('submit', async e => {
     e.preventDefault();

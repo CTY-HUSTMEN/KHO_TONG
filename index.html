@@ -610,7 +610,7 @@
                     <form id="form-nhap">
                         <div class="form-group">
                             <label>Mã Sản Phẩm (SKU)</label>
-                            <input type="text" id="in-product" list="sku-datalist" placeholder="Chọn hoặc nhập mã SKU mới..." required autocomplete="off">
+                            <input type="text" id="in-product" list="sku-datalist" placeholder="Chọn hoặc nhập mã SKU mới..." required autocomplete="off" oninput="updateImportTargetLocations()">
                             <datalist id="sku-datalist"></datalist>
                         </div>
                         <div class="form-group">
@@ -650,13 +650,20 @@
                                     <option value="cái">Cái</option>
                                     <option value="NEW" style="font-weight:bold; color:var(--accent-color);">+ Thêm mới...</option>
                                 </select>
-                                <input type="text" id="in-unit-custom" placeholder="Nhập định lượng..." style="flex:1; display:none;">
+                                <input type="text" id="in-unit-custom" placeholder="Nhập định lượng..." style="flex:1; display:none;" oninput="updateImportTargetLocations()">
                             </div>
                             <div style="margin-top:6px; text-align:right;">
-                                <a href="#" onclick="openManageUnitsModal(); return false;" style="font-size:11px; color:#64748b; text-decoration:underline;">🗑️ Quản lý định lượng đã thêm</a>
+                                <a href="#" onclick="openManageUnitsModal(); return false;" style="font-size:11px; color:#64748b; text-decoration:underline;">Quản lý định lượng đã thêm</a>
                             </div>
                         </div>
-                        <button type="submit" class="submit-btn btn-green">NHẬP VÀO HÀNG CHỜ</button>
+                        <div class="form-group">
+                            <label>Vị Trí Nhập Vào</label>
+                            <select id="in-target-loc" onchange="handleImportTargetChange()">
+                                <option value="WAITING">Hàng Chờ (mặc định)</option>
+                            </select>
+                            <div style="font-size:11px;color:#94a3b8;margin-top:4px;">Nếu trên kệ đã có sẵn vị trí cùng SKU / cùng loại bao bì / cùng định lượng, có thể chọn để cộng dồn thẳng vào đó, hoặc để mặc định — hàng sẽ vào Hàng Chờ.</div>
+                        </div>
+                        <button type="submit" class="submit-btn btn-green" id="btn-submit-nhap">NHẬP VÀO HÀNG CHỜ</button>
                     </form>
                 </div>
 
@@ -743,7 +750,7 @@
                         <div class="form-group">
                             <label>Vị Trí Nhập Túi Sau Quy Đổi</label>
                             <select id="cv-target-loc" onchange="updateConversionPreview()">
-                                <option value="WAITING">🕒 Hàng Chờ (mặc định)</option>
+                                <option value="WAITING">Hàng Chờ (mặc định)</option>
                             </select>
                             <div style="font-size:11px;color:#94a3b8;margin-top:4px;">Chọn 1 vị trí trên kệ đã có sẵn túi cùng mã để cộng dồn số lượng vào đó, hoặc để mặc định — túi mới sẽ vào Hàng Chờ.</div>
                         </div>
@@ -988,21 +995,18 @@ window.updateExportLocations = function(mode) {
     const sku = document.getElementById(`out-product-${mode}`).value;
     const locSelect = document.getElementById(`out-loc-${mode}`);
     
-    // Mặc định luôn có tùy chọn Auto
     locSelect.innerHTML = '<option value="AUTO">Tự động (Lấy từ mọi nơi)</option>';
     if (!sku) return;
 
     const allowedUnits = mode === 'chuan' ? ['túi', 'cái'] : ['gói'];
     const getItemUnit = (item) => item.unit || (item.type === 'bg-clear-white' ? 'túi' : (item.type === 'carton-bulk' ? 'cái' : 'gói'));
 
-    // 1. Quét tìm trong Khu hàng chờ
     Object.entries(fbWaiting).forEach(([wId, w]) => {
         if (w.sku === sku && allowedUnits.includes(getItemUnit(w))) {
             locSelect.innerHTML += `<option value="${wId}">Khu Hàng Chờ (Tồn: ${w.qty})</option>`;
         }
     });
 
-    // 2. Quét tìm trên các Kệ
     Object.entries(fbLocations).forEach(([locId, loc]) => {
         if (loc.sku === sku && allowedUnits.includes(getItemUnit(loc))) {
             const label = `${loc.rack}-${loc.tier}-${loc.slot}`;
@@ -1028,18 +1032,6 @@ const db   = firebase.database();
 const secondaryApp  = firebase.initializeApp(firebaseConfig, "Secondary");
 const secondaryAuth = secondaryApp.auth();
 
-// ══════════════════════════════════════════════════════════════════
-// PHIÊN ĐĂNG NHẬP THEO TAB/APP (KHÔNG TỰ NHẬN TÀI KHOẢN CŨ)
-// ══════════════════════════════════════════════════════════════════
-// Mục tiêu: mỗi lần MỞ LẠI file/app (tab mới, mở lại trình duyệt, mở lại
-// app) đều phải đăng nhập lại từ đầu — không tự động đăng nhập bằng phiên
-// đã lưu trước đó. Chỉ khi F5/reload NGAY TRONG CÙNG TAB thì mới giữ
-// nguyên đăng nhập (để tránh spam lịch sử đăng nhập mỗi lần refresh).
-//
-// Cách làm: dùng sessionStorage (tự xóa khi đóng tab) làm "vé" nhận diện
-// tab hiện tại + ép Firebase Auth chỉ lưu phiên kiểu SESSION (thay vì mặc
-// định LOCAL — lưu vĩnh viễn trong trình duyệt khiến đóng rồi mở lại vẫn
-// tự đăng nhập, đây chính là nguyên nhân gây "kẹt"/nhận nhầm tài khoản).
 let currentSessionId = sessionStorage.getItem('mySessionId');
 const isFreshAppOpen  = !currentSessionId; // true = tab/app vừa mở lại từ đầu
 if (!currentSessionId) {
@@ -1049,12 +1041,8 @@ if (!currentSessionId) {
 
 (async function bootstrapSessionPersistence() {
     try {
-        // Auth chỉ tồn tại trong phạm vi tab/app hiện tại.
         await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
         if (isFreshAppOpen) {
-            // Tab/app vừa mở lại (không phải F5 trong cùng tab): xoá sạch mọi
-            // phiên đăng nhập cũ có thể còn sót lại (vd: trình duyệt lưu từ
-            // trước khi áp dụng bản cập nhật này) để bắt buộc đăng nhập mới.
             await auth.signOut().catch(() => {});
         }
     } catch (e) {
@@ -1100,7 +1088,7 @@ let fbUsers       = {};
 let fbOnlineMap   = {};        
 let fbConversionRatios = {};   
 let _draggingLocId = null;    
-let shelfEditMode = false;    // chỉ khi bật mới cho phép kéo-thả / resize vị trí kệ
+let shelfEditMode = false;    
 
 document.getElementById('btn-submit-login').addEventListener('click', async () => {
     const email = document.getElementById('txt-email').value.trim();
@@ -1126,7 +1114,7 @@ document.getElementById('btn-submit-login').addEventListener('click', async () =
 });
 
 document.getElementById('btn-logout').addEventListener('click', async () => {
-    stopPresenceHeartbeat(); // dừng ngay để không bị ghi đè lại presence sau khi xóa
+    stopPresenceHeartbeat(); 
     if (currentUser && currentUser.uid) {
         try {
             await db.ref(`presence/${currentUser.uid}`).remove();
@@ -1180,24 +1168,6 @@ document.getElementById('btn-forgot-pass').addEventListener('click', async (e) =
 let currentLoginRecordId = sessionStorage.getItem('myLoginRecordId') || null;
 let loginReqListener = null;
 
-// ══════════════════════════════════════════════════════════════════
-// PHÁT HIỆN MẤT KẾT NỐI (KHÔNG CÒN HỦY onDisconnect KHI ĐÓNG TRANG)
-// ══════════════════════════════════════════════════════════════════
-// LƯU Ý QUAN TRỌNG — LỖI CŨ ĐÃ SỬA:
-// Trước đây code hủy (cancel) onDisconnect mỗi khi trang unload (kể cả
-// khi đóng tab/thoát app THẬT SỰ, không chỉ F5), nhưng chỉ có F5 mới
-// đăng ký lại (rearm). Hậu quả: hễ người dùng đóng tab/thoát app thật,
-// onDisconnect đã bị hủy từ trước đó nên Firebase KHÔNG BAO GIỜ tự xóa
-// presence / ghi logoutTime nữa ⇒ tài khoản bị "treo online" vĩnh viễn,
-// chặn mọi lần đăng nhập mới. Đây là nguyên nhân chính của lỗi bạn gặp.
-//
-// Cách sửa: không hủy onDisconnect nữa — cứ để nó luôn sẵn sàng. Mỗi khi
-// kết nối Firebase được thiết lập (kể cả sau F5 reload), ta CHỈ CẦN đặt
-// lại (re-arm) — việc đặt lại onDisconnect nhiều lần là vô hại. Nếu có
-// hiện tượng "nháy" logoutTime/presence trong tích tắc lúc F5 (do socket
-// cũ đóng trước khi socket mới kịp ghi đè), finalizeLogin() bên dưới sẽ
-// tự động đưa logoutTime về null và bật lại presence ngay khi trang mới
-// tải xong — không gây treo vì không có gì bị "hủy" cả.
 function rearmOnDisconnect() {
     if (!currentUser?.uid || !currentLoginRecordId) return;
     db.ref(`loginHistory/${currentUser.uid}/${currentLoginRecordId}/logoutTime`)
@@ -1205,14 +1175,8 @@ function rearmOnDisconnect() {
     db.ref(`presence/${currentUser.uid}`).onDisconnect().remove();
 }
 
-// Failsafe bổ sung: dùng sự kiện pagehide (đáng tin cậy hơn beforeunload
-// trên mobile/PWA) để chủ động ghi logoutTime + xóa presence ngay khi có
-// thể — không chờ server phát hiện mất kết nối (có thể mất vài chục giây
-// trên mạng chập chờn). Đây chỉ là "dọn sớm cho gọn", KHÔNG hủy onDisconnect,
-// nên dù request này lỡ không kịp gửi (đóng tab đột ngột), onDisconnect
-// phía server vẫn sẽ tự dọn dẹp — không còn kịch bản "treo vĩnh viễn" nữa.
 window.addEventListener('pagehide', (e) => {
-    if (e.persisted) return; // trang được lưu bfcache (có thể quay lại) — không coi là thoát hẳn
+    if (e.persisted) return; 
     if (!currentUser?.uid || !currentLoginRecordId) return;
     try {
         const now = new Date().toISOString();
@@ -1251,9 +1215,6 @@ auth.onAuthStateChanged(async user => {
     const activeSessionId = userData.sessionId;
     
     const presenceSnap = await db.ref(`presence/${user.uid}`).get();
-    // Chỉ coi là "đang có người dùng" khi heartbeat còn tươi (< 50s).
-    // Phiên cũ bị treo (tab đóng đột ngột, app bị hệ điều hành kill...)
-    // sẽ không còn heartbeat tươi -> vào thẳng, không cần xin phép ai.
     const isOnline = isPresenceFresh(presenceSnap.val());
 
     if (isOnline && activeSessionId && activeSessionId !== currentSessionId) {
@@ -1280,13 +1241,10 @@ auth.onAuthStateChanged(async user => {
             resolved = true;
             db.ref(`users/${user.uid}/loginRequest`).off();
 
-            // Hết 20s mà thiết bị kia không phản hồi: thay vì khoá chặn vĩnh
-            // viễn (gây "nghẽn", không ai đăng nhập được), tự động cho phép
-            // thiết bị mới vào và đóng phiên cũ lại — tránh treo tài khoản.
             try { await db.ref(`presence/${user.uid}`).remove(); } catch (e) {}
             await finalizeLogin(user, userData, snap.exists());
             showToast('⚠️ Thiết bị trước không phản hồi sau 20s — đã tự động chuyển quyền đăng nhập.', 4000);
-        }, 20000); // 20 giây
+        }, 20000); 
 
         db.ref(`users/${user.uid}/loginRequest`).on('value', async (reqSnap) => {
             const req = reqSnap.val();
@@ -1313,8 +1271,6 @@ auth.onAuthStateChanged(async user => {
         });
 
     } else {
-        // Phiên cũ (nếu có) đã hết hạn/treo -> dọn sạch presence trước khi vào,
-        // đảm bảo không còn dữ liệu "online" cũ gây nhầm lẫn cho các listener khác.
         if (presenceSnap.val() && !isOnline) {
             try { await db.ref(`presence/${user.uid}`).remove(); } catch (e) {}
         }
@@ -1350,7 +1306,6 @@ async function finalizeLogin(user, userData, userExists) {
     loginReqListener = db.ref(`users/${user.uid}/loginRequest`).on('value', (snap) => {
         const req = snap.val();
 
-        // Cưỡng chế đăng xuất bởi admin
         if (req && req.forceLogout === true) {
             showForceLogoutScreen(req.byAdminName || 'Quản trị viên');
             return;
@@ -1366,16 +1321,11 @@ async function finalizeLogin(user, userData, userExists) {
 
     const existingRecordId = sessionStorage.getItem('myLoginRecordId');
     if (existingRecordId) {
-        // Reload trang (F5, cùng tab): tái sử dụng bản ghi cũ.
-        // Chủ động đưa logoutTime về null phòng trường hợp socket cũ vừa kịp
-        // ghi logoutTime trong lúc trang chuyển tiếp — tránh hiển thị nhầm
-        // là "đã đăng xuất" dù thực chất vẫn đang dùng (chỉ vừa F5).
         currentLoginRecordId = existingRecordId;
         try {
             await db.ref(`loginHistory/${user.uid}/${currentLoginRecordId}`).update({ logoutTime: null });
         } catch (e) {}
     } else {
-        // Đăng nhập mới thật sự: tạo bản ghi mới
         try {
             const histRef = db.ref(`loginHistory/${user.uid}`).push();
             currentLoginRecordId = histRef.key;
@@ -1385,7 +1335,6 @@ async function finalizeLogin(user, userData, userExists) {
                 logoutTime: null,
                 sessionId: currentSessionId
             });
-            // Tự động xóa các bản ghi cũ nếu vượt quá giới hạn
             enforceLoginHistoryLimit(user.uid);
         } catch (e) {
             console.warn('Không thể ghi lịch sử đăng nhập:', e);
@@ -1456,8 +1405,6 @@ const listeners = {};
     db.ref('.info/connected').on('value', snap => {
         if (snap.val()) {
             setSyncBadge('online', 'Realtime');
-            // Trang vừa kết nối lại (kể cả sau reload/mất mạng tạm thời):
-            // đặt lại onDisconnect + ghi lại heartbeat ngay lập tức.
             rearmOnDisconnect();
             writePresenceHeartbeat();
         } else {
@@ -1466,18 +1413,7 @@ const listeners = {};
     });
 }
 
-// ══════════════════════════════════════════════════════════════════
-// HEARTBEAT — LỚP BẢO VỆ THỨ 2 CHỐNG "TREO" TÀI KHOẢN
-// ══════════════════════════════════════════════════════════════════
-// onDisconnect() thường đủ nhanh khi đóng tab bình thường, nhưng trên
-// app di động/PWA, hệ điều hành có thể "giết" tiến trình mà không đóng
-// socket đúng cách, khiến server có thể mất một khoảng thời gian mới
-// phát hiện ra mất kết nối (thậm chí có thể không phát hiện được).
-// Heartbeat ghi thời gian "còn sống" mỗi PRESENCE_HEARTBEAT_MS. Nếu một
-// phiên không cập nhật heartbeat quá PRESENCE_STALE_MS, hệ thống coi
-// như phiên đó ĐÃ CHẾT — cho phép đăng nhập mới ngay, không cần chờ
-// xác nhận từ một thiết bị đã không còn hoạt động.
-const PRESENCE_HEARTBEAT_MS = 20000; // ghi "còn sống" mỗi 20 giây
+const PRESENCE_HEARTBEAT_MS = 20000; 
 const PRESENCE_STALE_MS     = 50000; // quá 50 giây không có nhịp -> coi là đã treo/chết
 let _presenceHeartbeatTimer = null;
 
@@ -1505,10 +1441,6 @@ function stopPresenceHeartbeat() {
     }
 }
 
-// Xác định một phiên có thực sự đang online hay không (còn "sống" theo heartbeat).
-// Dữ liệu presence kiểu boolean cũ (trước khi có heartbeat) hoặc thiếu lastSeen
-// sẽ được coi là KHÔNG online — tự động "dọn" các phiên treo còn sót lại từ
-// trước khi áp dụng bản cập nhật này.
 function isPresenceFresh(presenceVal) {
     if (!presenceVal || typeof presenceVal !== 'object') return false;
     if (presenceVal.online !== true) return false;
@@ -1535,6 +1467,7 @@ function renderAll() {
     renderConversionRatioTable();
     renderConversionSelect();
     updateConversionPreview();
+    updateImportTargetLocations();
 }
 
 function renderRackStructure() {
@@ -1613,7 +1546,18 @@ function renderWaiting() {
     const waitEl = document.getElementById('waiting-area');
     waitEl.innerHTML = '';
 
-    Object.keys(fbWaiting).sort().forEach(wId => {
+    const wIds = Object.keys(fbWaiting).sort((a, b) => {
+        const wa = fbWaiting[a] || {}, wb = fbWaiting[b] || {};
+        const typeA = wa.type || '', typeB = wb.type || '';
+        if (typeA !== typeB) return typeA.localeCompare(typeB);
+        const unitA = wa.unit || '', unitB = wb.unit || '';
+        if (unitA !== unitB) return unitA.localeCompare(unitB);
+        const skuA = wa.sku || '', skuB = wb.sku || '';
+        if (skuA !== skuB) return skuA.localeCompare(skuB);
+        return a.localeCompare(b); 
+    });
+
+    wIds.forEach(wId => {
         const w = fbWaiting[wId];
         waitEl.appendChild(createItemElement(w, `WAIT`, wId, true));
     });
@@ -1648,9 +1592,6 @@ function getStockByUnitMap(allowedUnits) {
     return map;
 }
 
-// Trả về danh sách các đơn vị (túi/gói/cái) đang thực sự tồn tại trong kho
-// (locations + waiting) cho 1 SKU cụ thể — dùng để chỉ hiện đúng phân loại
-// thực có ở mục "Phân Loại Kiểm" trong Kiểm Kho Thực Tế.
 function getUnitsPresentForSku(sku) {
     const units = new Set();
     const process = (item) => {
@@ -1750,13 +1691,12 @@ window.toggleExportTab = function(mode) {
     }
 }
 
-// Bảng áp sẵn định lượng cho từng loại bao bì cố định
 const PRESET_PKG_UNITS = {
-    'bg-gray-original': 'gói',   // Túi gốc (màu xám) → gói
-    'bg-clear-white':   'túi',   // Túi đóng sẵn (màu trắng) → túi
-    'carton-bulk':      'cái',   // Thùng Carton → cái
-    'bg-yellow-bag':    'cái',   // Túi màu vàng → cái
-    'bg-cream-box':     'cái',   // Hộp hàng → cái
+    'bg-gray-original': 'gói',   
+    'bg-clear-white':   'túi',   
+    'carton-bulk':      'cái',   
+    'bg-yellow-bag':    'cái',   
+    'bg-cream-box':     'cái',   
 };
 
 window.renderPackageSelect = function() {
@@ -1784,12 +1724,10 @@ window.renderPackageSelect = function() {
     _editingPkgId = null;
     const saveBtn = document.getElementById('btn-save-pkg');
     if (saveBtn) saveBtn.textContent = 'Lưu';
-    // Áp sẵn định lượng cho giá trị hiện tại
     applyPackageUnit();
     updatePkgEditButtonVisibility();
 };
 
-// Tự động set định lượng khi chọn loại bao bì
 window.applyPackageUnit = function() {
     const sel = document.getElementById('in-type');
     const unitSel = document.getElementById('in-unit-select');
@@ -1798,13 +1736,11 @@ window.applyPackageUnit = function() {
     const unit = opt?.dataset?.unit || PRESET_PKG_UNITS[sel.value] || null;
     
     if (unit) {
-        // Kiểm tra xem định lượng auto này có nằm trong menu không
         const exists = Array.from(unitSel.options).some(o => o.value === unit);
         if (exists) {
             unitSel.value = unit;
             handleUnitSelectChange();
         } else {
-            // Nếu là định lượng lạ, chuyển menu sang Thêm mới và điền vào ô chữ
             unitSel.value = 'NEW';
             handleUnitSelectChange();
             document.getElementById('in-unit-custom').value = unit;
@@ -1812,24 +1748,19 @@ window.applyPackageUnit = function() {
     }
 };
 
-// 1. Hàm lưu định lượng mới lên Firebase vĩnh viễn
 async function saveCustomUnitToFirebase(unitName) {
     if (!unitName) return;
     unitName = unitName.trim().toLowerCase();
     const baseUnits = ['gói', 'túi', 'cái'];
-    if (baseUnits.includes(unitName)) return; // Không lưu trùng với mặc định
-    
-    // Lưu vào nhánh settings/customUnits trên Firebase
+    if (baseUnits.includes(unitName)) return; 
+
     const safeKey = unitName.replace(/[^a-zA-Z0-9]/g, '_');
     await db.ref(`settings/customUnits/${safeKey}`).set(unitName);
 }
 
-// 2. Hàm tự động vẽ lại TẤT CẢ các menu chọn định lượng
 window.renderUnitDropdowns = function() {
     const baseUnits = ['gói', 'túi', 'cái'];
-    // Kéo các định lượng mới đã lưu từ Firebase về
     const customUnits = fbSettings?.customUnits ? Object.values(fbSettings.customUnits) : [];
-    // Gộp lại và xóa trùng lặp
     const allUnits = [...new Set([...baseUnits, ...customUnits])];
     
     let optionsHtml = '';
@@ -1837,16 +1768,14 @@ window.renderUnitDropdowns = function() {
         optionsHtml += `<option value="${u}">${u.charAt(0).toUpperCase() + u.slice(1)}</option>`;
     });
     optionsHtml += `<option value="NEW" style="font-weight:bold; color:var(--accent-color);">+ Thêm mới...</option>`;
-    
-    // Cập nhật menu ở Form Nhập Kho
+
     const inUnitSel = document.getElementById('in-unit-select');
     if (inUnitSel) {
         const prevVal = inUnitSel.value;
         inUnitSel.innerHTML = optionsHtml;
         if (allUnits.includes(prevVal) || prevVal === 'NEW') inUnitSel.value = prevVal;
     }
-    
-    // Cập nhật menu ở Form Tạo Bao Bì
+
     const pkgUnitSel = document.getElementById('new-pkg-unit-select');
     if (pkgUnitSel) {
         const prevVal = pkgUnitSel.value;
@@ -1855,7 +1784,6 @@ window.renderUnitDropdowns = function() {
     }
 };
 
-// 3. Hàm Ẩn/Hiện ô nhập chữ cho phần Tạo Bao Bì
 window.handlePkgUnitSelectChange = function() {
     const selectEl = document.getElementById('new-pkg-unit-select');
     const customInput = document.getElementById('new-pkg-unit-custom');
@@ -1885,9 +1813,9 @@ window.handlePackageTypeChange = function() {
         applyPackageUnit();
     }
     updatePkgEditButtonVisibility();
+    updateImportTargetLocations();
 };
 
-// Hiện/ẩn nút "✏️ Sửa" — chỉ hiện khi đang chọn 1 loại bao bì TỰ TẠO (custom_...)
 function updatePkgEditButtonVisibility() {
     const sel = document.getElementById('in-type');
     const editBtn = document.getElementById('btn-edit-pkg');
@@ -1906,13 +1834,13 @@ window.handleUnitSelectChange = function() {
     } else {
         customInput.style.display = 'none';
         customInput.required = false;
-        customInput.value = ''; // Xóa chữ cũ nếu đổi ý quay lại chọn menu
+        customInput.value = ''; 
     }
+    updateImportTargetLocations();
 };
 
-let _editingPkgId = null; // id loại bao bì tuỳ chỉnh đang được sửa (null = đang tạo mới)
+let _editingPkgId = null; 
 
-// Mở form Tạo/Sửa ở chế độ SỬA, điền sẵn dữ liệu của loại bao bì đang chọn
 window.openEditPackageType = function() {
     const sel = document.getElementById('in-type');
     const id = sel?.value;
@@ -1948,7 +1876,6 @@ window.openEditPackageType = function() {
     container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 };
 
-// Huỷ form Tạo/Sửa loại bao bì, khôi phục về trạng thái ban đầu
 window.cancelPkgForm = function() {
     _editingPkgId = null;
     resetNewPkgForm();
@@ -1982,13 +1909,11 @@ window.saveNewPackageType = async function() {
     if (!name) { showToast('⚠️ Vui lòng nhập tên bao bì'); return; }
     if (unitSel === 'NEW' && !unit) { showToast('⚠️ Vui lòng nhập tên định lượng!'); return; }
 
-    // KÍCH HOẠT LƯU ĐỊNH LƯỢNG LÊN FIREBASE (nếu là định lượng mới)
     if (unitSel === 'NEW' && unit) {
         await saveCustomUnitToFirebase(unit);
     }
 
     if (_editingPkgId) {
-        // ── CHẾ ĐỘ SỬA: cập nhật loại bao bì đã có ──
         const editId = _editingPkgId;
         await db.ref(`packagingTypes/${editId}`).update({ name, color, unit });
         showToast(`✅ Đã cập nhật loại bao bì: ${name} (định lượng: ${unit})`);
@@ -2006,7 +1931,6 @@ window.saveNewPackageType = async function() {
         return;
     }
 
-    // ── CHẾ ĐỘ TẠO MỚI ──
     const newId = 'custom_' + Date.now();
     await db.ref(`packagingTypes/${newId}`).set({ name, color, unit });
     showToast(`✅ Đã tạo loại bao bì: ${name} (định lượng: ${unit})`);
@@ -2022,9 +1946,6 @@ window.saveNewPackageType = async function() {
     }, 400);
 };
 
-// ══════════════════════════════════════════════════════════════════
-// QUẢN LÝ / XOÁ ĐỊNH LƯỢNG TUỲ CHỈNH ĐÃ THÊM (settings/customUnits)
-// ══════════════════════════════════════════════════════════════════
 window.openManageUnitsModal = function() {
     const baseUnits = ['gói', 'túi', 'cái'];
     const customEntries = fbSettings?.customUnits ? Object.entries(fbSettings.customUnits) : [];
@@ -2059,7 +1980,7 @@ window.deleteCustomUnit = async function(key, name) {
     try {
         await db.ref(`settings/customUnits/${key}`).remove();
         showToast(`✅ Đã xoá định lượng "${name}"`);
-        openManageUnitsModal(); // vẽ lại danh sách trong modal
+        openManageUnitsModal(); 
     } catch (err) {
         showToast(`❌ Không thể xoá (${err.code || err.message}). Kiểm tra lại quyền/Rules.`, 4000);
         console.error('deleteCustomUnit error:', err);
@@ -2194,14 +2115,12 @@ window.updateConversionPreview = function() {
         📦 Còn lại <b>${goiConLai}</b> gói chưa đủ để quy đổi tiếp`;
 };
 
-// Vẽ lại menu "Vị Trí Nhập Túi Sau Quy Đổi" — chỉ liệt kê các vị trí trên kệ
-// đang chứa túi đóng sẵn (trắng) cùng mã SKU, để cộng dồn số lượng vào đó.
 function updateConversionTargetLocations(sku) {
     const sel = document.getElementById('cv-target-loc');
     if (!sel) return;
     const prevVal = sel.value;
 
-    let html = `<option value="WAITING">🕒 Hàng Chờ (mặc định)</option>`;
+    let html = `<option value="WAITING">Hàng Chờ (mặc định)</option>`;
     if (sku) {
         Object.entries(fbLocations).forEach(([locId, loc]) => {
             if (loc.sku !== sku || loc.type !== 'bg-clear-white') return;
@@ -2352,8 +2271,7 @@ function renderLogs() {
 
 function updateDashboard() {
     const stockMap = getStockMap();
-    
-    // 1. Tính tổng số lượng theo định lượng động (Mới)
+
     const unitAgg = {};
     const processUnit = (item) => {
         let unit = item.unit || (item.type === 'bg-clear-white' ? 'túi' : (item.type === 'carton-bulk' ? 'cái' : 'gói'));
@@ -2363,8 +2281,7 @@ function updateDashboard() {
     Object.values(fbWaiting).forEach(processUnit);
 
     document.getElementById('kpi-sku').textContent = stockMap.size;
-    
-    // 2. Render động nội dung tổng sản phẩm theo các định lượng hiện có
+
     let kpiTotalHtml = '';
     Object.entries(unitAgg).sort((a,b) => b[1]-a[1]).forEach(([u, qty]) => {
         if (qty > 0) {
@@ -2377,7 +2294,6 @@ function updateDashboard() {
     document.getElementById('kpi-racks').textContent = Object.keys(fbRacks).length;
     document.getElementById('kpi-waiting').textContent = Object.keys(fbWaiting).length;
 
-    // 3. Khôi phục lại goiMap và tuicaiMap để không bị lỗi phần Cảnh báo
     const goiMap = getStockByUnitMap(['gói']);
     const tuicaiMap = getStockByUnitMap(['túi', 'cái']); 
 
@@ -2403,7 +2319,6 @@ function updateDashboard() {
     if (!lowCountTuiCai) htmlLowTuiCai = '<div class="alert-item" style="color:#64748b;">Hàng hóa đang đủ tải ✔</div>';
     document.getElementById('list-low-stock-tuicai').innerHTML = htmlLowTuiCai;
 
-    // 4. Tồn kho lớn nhất
     const sortedTop = [...stockMap.entries()].sort((a,b) => b[1]-a[1]);
     let htmlTop = '';
     sortedTop.slice(0, 3).forEach(([sku, qty]) => {
@@ -2566,10 +2481,6 @@ function createItemElement(locData, locLabel, locId, isWaiting) {
     }
     if (customStyle) { div.style.cssText += customStyle; } 
 
-    // canEdit: người dùng CÓ QUYỀN chỉnh sửa (không phải nhân viên).
-    // editActive: quyền chỉnh sửa THỰC SỰ đang bật (đã bấm nút "✏️ Chỉnh Sửa Vị Trí").
-    // Chỉ khi editActive=true mới gắn kéo-thả/resize — tránh thao tác nhầm & tránh
-    // trình duyệt di động hiểu nhầm chạm-giữ thành bôi đen chữ / Copy-Paste.
     const canEdit = currentUser?.role !== 'nhanvien';
     const editActive = canEdit && shelfEditMode;
     if (editActive) div.setAttribute('draggable', 'true');
@@ -2675,13 +2586,6 @@ function setupWaitingDropZone(waitEl) {
     });
 }
 
-// ══════════════════════════════════════════════════════════════════
-// KÉO-THẢ BẰNG CẢM ỨNG (TOUCH) — cho điện thoại / máy tính bảng.
-// HTML5 Drag & Drop (dragstart/drop) gần như không hoạt động trên
-// trình duyệt di động, nên phải tự xử lý touchstart/touchmove/touchend.
-// Chỉ được gắn khi editActive=true (xem createItemElement) nên sẽ
-// KHÔNG can thiệp gì khi người dùng chỉ đang xem/cuộn bình thường.
-// ══════════════════════════════════════════════════════════════════
 function setupItemTouchDrag(itemEl, locId) {
     let dragging = false;
     let startX = 0, startY = 0;
@@ -2718,8 +2622,8 @@ function setupItemTouchDrag(itemEl, locId) {
     }
 
     itemEl.addEventListener('touchstart', e => {
-        if (e.target.closest('.btn-del-item')) return; // để nút xoá hoạt động bình thường
-        if (e.target.closest('.resize-handle')) return; // resize có xử lý riêng
+        if (e.target.closest('.btn-del-item')) return; 
+        if (e.target.closest('.resize-handle')) return; 
         if (e.touches.length !== 1) return;
         const touch = e.touches[0];
         startX = touch.clientX;
@@ -2737,7 +2641,7 @@ function setupItemTouchDrag(itemEl, locId) {
             }
             return;
         }
-        e.preventDefault(); // chặn cuộn trang / bôi đen trong lúc đang kéo
+        e.preventDefault(); 
 
         if (ghost) {
             ghost.style.left = (touch.clientX - itemEl.offsetWidth / 2) + 'px';
@@ -2943,7 +2847,6 @@ function setupResizeHandle(itemEl, locId, locData) {
     const handle = itemEl.querySelector('.resize-handle');
     if (!handle) return;
 
-    // Chuột (laptop)
     handle.addEventListener('mousedown', e => {
         e.preventDefault();
         e.stopPropagation();
@@ -2966,8 +2869,6 @@ function setupResizeHandle(itemEl, locId, locData) {
         document.addEventListener('mouseup', onUp);
     });
 
-    // Cảm ứng (điện thoại/tablet) — preventDefault ngay từ touchstart để
-    // trình duyệt không hiểu nhầm chạm-giữ thành bôi đen chữ / mở Copy-Paste.
     handle.addEventListener('touchstart', e => {
         e.preventDefault();
         e.stopPropagation();
@@ -3042,7 +2943,6 @@ window.deleteRack = async (rackId) => {
     setSyncBadge('saving', 'Đang xóa & sắp xếp lại kệ...');
     const updates = {};
 
-    // 1) Đưa toàn bộ hàng đang ở kệ bị xóa về Khu Hàng Chờ Xếp Kệ
     Object.values(tierData).forEach(tier => {
         Object.values(tier).forEach(slot => {
             if (slot.locationId && fbLocations[slot.locationId]) {
@@ -3062,21 +2962,17 @@ window.deleteRack = async (rackId) => {
         });
     });
 
-    // 2) Xóa hẳn kệ này
     updates[`racks/${rackId}`] = null;
 
-    // 3) ĐÁNH SỐ LẠI các kệ phía sau cho liên tục, không để trống số
-    // (vd: xóa K2 trong [K1,K2,K3,K4] → K3 trở thành K2, K4 trở thành K3)
-    // Chỉ áp dụng cho các kệ đặt tên theo đúng định dạng "K<số>".
     const deletedNum = parseInt(rackId.replace(/^K/, ''));
     if (!isNaN(deletedNum)) {
-        const rackIdMap = {}; // oldId -> newId
+        const rackIdMap = {}; 
 
         Object.keys(fbRacks)
             .filter(id => id !== rackId)
             .forEach(id => {
                 const m = id.match(/^K(\d+)$/);
-                if (!m) { rackIdMap[id] = id; return; } // kệ đặt tên khác, giữ nguyên
+                if (!m) { rackIdMap[id] = id; return; } 
                 const num = parseInt(m[1]);
                 rackIdMap[id] = num > deletedNum ? `K${num - 1}` : id;
             });
@@ -3088,14 +2984,11 @@ window.deleteRack = async (rackId) => {
                 return na - nb;
             })
             .forEach(([oldId, newId]) => {
-            if (oldId === newId) return; // không cần dịch số
+            if (oldId === newId) return;
 
-            // Dời nguyên cấu trúc tầng/ô của kệ này sang ID mới
             updates[`racks/${oldId}`] = null;
             updates[`racks/${newId}`] = fbRacks[oldId];
 
-            // Cập nhật lại field "rack" trong từng location đang thuộc kệ này,
-            // để tránh tình trạng hàng "nhảy" sang kệ sai sau khi đổi số.
             Object.entries(fbLocations).forEach(([locId, loc]) => {
                 if (loc.rack === oldId) {
                     updates[`locations/${locId}/rack`] = newId;
@@ -3108,45 +3001,101 @@ window.deleteRack = async (rackId) => {
     showToast(`🗑 Đã xóa kệ ${rackId}${itemsInRack.length ? `, chuyển ${itemsInRack.length} mặt hàng về Hàng Chờ` : ''} và đánh số lại các kệ phía sau`);
 };
 
+window.updateImportTargetLocations = function() {
+    const sel = document.getElementById('in-target-loc');
+    if (!sel) return;
+    const prevVal = sel.value;
+
+    const sku  = document.getElementById('in-product')?.value.trim().toUpperCase();
+    const type = document.getElementById('in-type')?.value;
+    const unitSelect = document.getElementById('in-unit-select')?.value;
+    const unitCustom = document.getElementById('in-unit-custom')?.value.trim().toLowerCase();
+    const unit = unitSelect === 'NEW' ? unitCustom : unitSelect;
+
+    let html = `<option value="WAITING">Hàng Chờ (mặc định)</option>`;
+
+    if (sku && type && type !== 'NEW' && unit) {
+        Object.entries(fbLocations).forEach(([locId, loc]) => {
+            if ((loc.sku || '').toUpperCase() !== sku) return;
+            if (loc.type !== type) return;
+            const locUnit = loc.unit || (loc.type === 'bg-clear-white' ? 'túi' : (loc.type === 'carton-bulk' ? 'cái' : 'gói'));
+            if (locUnit !== unit) return;
+            const slotInfo = findSlotOfLocation(locId);
+            const label = slotInfo ? `${slotInfo.rackId}-${slotInfo.tierId}-${slotInfo.slotId}` : locId;
+            html += `<option value="${locId}">📍 ${label} (hiện có: ${loc.qty || 0} ${unit})</option>`;
+        });
+    }
+
+    sel.innerHTML = html;
+    if (Array.from(sel.options).some(o => o.value === prevVal)) sel.value = prevVal;
+    handleImportTargetChange();
+};
+
+window.handleImportTargetChange = function() {
+    const sel = document.getElementById('in-target-loc');
+    const btn = document.getElementById('btn-submit-nhap');
+    if (!sel || !btn) return;
+    btn.textContent = sel.value === 'WAITING' ? 'NHẬP VÀO HÀNG CHỜ' : 'NHẬP THẲNG LÊN KỆ (CỘNG DỒN)';
+};
+
 document.getElementById('form-nhap').addEventListener('submit', async e => {
     e.preventDefault();
     const sku    = document.getElementById('in-product').value.trim().toUpperCase();
     const source = document.getElementById('in-source').value.trim();
     const type   = document.getElementById('in-type').value;
     const qty    = parseInt(document.getElementById('in-qty').value);
-    
-    // Lấy định lượng từ Menu hoặc từ ô tùy chỉnh
+    const targetLocId = document.getElementById('in-target-loc')?.value || 'WAITING';
+
     const unitSelect = document.getElementById('in-unit-select').value;
     const unitCustom = document.getElementById('in-unit-custom').value.trim().toLowerCase();
     const unit       = unitSelect === 'NEW' ? unitCustom : unitSelect;
     
     if (type === 'NEW') { showToast('⚠️ Vui lòng lưu Loại Bao Bì mới trước khi nhập!'); return; }
     if (unitSelect === 'NEW' && !unit) { showToast('⚠️ Vui lòng nhập tên định lượng mới!'); document.getElementById('in-unit-custom').focus(); return; }
-    // THÊM ĐOẠN NÀY ĐỂ TỰ LƯU ĐỊNH LƯỢNG TỪ FORM NHẬP KHO
+
     if (unitSelect === 'NEW' && unit) {
         await saveCustomUnitToFirebase(unit);
     }
 
     if (!sku || qty < 1) return;
 
-    setSyncBadge('saving', 'Đang lưu...');
-    const waitId = 'WAIT' + Date.now();
-    const txId   = generateTransID('NK');
+    const useTargetLoc = targetLocId !== 'WAITING'
+        && fbLocations[targetLocId]
+        && (fbLocations[targetLocId].sku || '').toUpperCase() === sku
+        && fbLocations[targetLocId].type === type;
+    const targetSlot = useTargetLoc ? findSlotOfLocation(targetLocId) : null;
 
+    setSyncBadge('saving', 'Đang lưu...');
+    const txId = generateTransID('NK');
     const updates = {};
-    updates[`waiting/${waitId}`] = { 
-        sku, qty, type, unit, 
-        status: 'waiting', createdAt: new Date().toISOString() 
-    };
+    let targetLabel = 'Hàng Chờ';
+
+    if (useTargetLoc) {
+        const targetLoc = fbLocations[targetLocId];
+        const newQty = (targetLoc.qty || 0) + qty;
+        updates[`locations/${targetLocId}/qty`] = newQty;
+        if (targetSlot) {
+            updates[`racks/${targetSlot.rackId}/${targetSlot.tierId}/${targetSlot.slotId}/used`] = newQty;
+        }
+        const targetLabelShort = targetSlot ? `${targetSlot.rackId}-${targetSlot.tierId}-${targetSlot.slotId}` : targetLocId;
+        targetLabel = `vị trí ${targetLabelShort} (tổng: ${newQty} ${unit})`;
+    } else {
+        const waitId = 'WAIT' + Date.now();
+        updates[`waiting/${waitId}`] = { 
+            sku, qty, type, unit, 
+            status: 'waiting', createdAt: new Date().toISOString() 
+        };
+    }
+
     updates[`transactions/${txId}`] = {
-        type: 'IMPORT', sku, qty, from: source || 'Nhà cung cấp', to: 'Waiting',
+        type: 'IMPORT', sku, qty, from: source || 'Nhà cung cấp', to: useTargetLoc ? 'Kệ' : 'Waiting',
         note: source || '', time: new Date().toISOString(), user: currentUser.email
     };
 
     await db.ref().update(updates);
     document.getElementById('in-product').value = '';
     document.getElementById('in-source').value = '';
-    showToast(`✅ Đã nhập ${qty} ${unit} [${sku}] vào Hàng Chờ`);
+    showToast(`✅ Đã nhập ${qty} ${unit} [${sku}] vào ${targetLabel}`);
 });
 
 async function handleExportForm(e, mode) {
@@ -3161,7 +3110,6 @@ async function handleExportForm(e, mode) {
     const allowedUnits = mode === 'chuan' ? ['túi', 'cái'] : ['gói'];
     const getItemUnit = (item) => item.unit || (item.type === 'bg-clear-white' ? 'túi' : (item.type === 'carton-bulk' ? 'cái' : 'gói'));
 
-    // KKIỂM TRA TỒN KHO TRƯỚC KHI XUẤT
     if (selectedLoc !== 'AUTO') {
         const item = fbWaiting[selectedLoc] || fbLocations[selectedLoc];
         if (!item || item.qty < qtyToExport) {
@@ -3185,9 +3133,7 @@ async function handleExportForm(e, mode) {
     const updates = {};
     let remaining = qtyToExport;
 
-    // THỰC THI TRỪ HÀNG
     if (selectedLoc !== 'AUTO') {
-        // TRỪ ĐÚNG VỊ TRÍ CHỈ ĐỊNH
         if (fbWaiting[selectedLoc]) {
             const w = fbWaiting[selectedLoc];
             if (w.qty <= remaining) updates[`waiting/${selectedLoc}`] = null;
@@ -3207,7 +3153,6 @@ async function handleExportForm(e, mode) {
             }
         }
     } else {
-        // TỰ ĐỘNG TRỪ DẦN TỪ MỌI NƠI (Như phiên bản cũ)
         Object.entries(fbWaiting).forEach(([wId, w]) => {
             if (remaining <= 0 || w.sku !== sku || !allowedUnits.includes(getItemUnit(w))) return;
             if (w.qty <= remaining) {
@@ -3246,7 +3191,6 @@ async function handleExportForm(e, mode) {
 
     await db.ref().update(updates);
     document.getElementById(`out-dest-${mode}`).value = '';
-    // Reset lại ô chọn vị trí
     updateExportLocations(mode); 
     showToast(`📤 Đã xuất ${qtyToExport} [${sku}] thành công!`);
 }
@@ -3268,7 +3212,6 @@ window.updateKKSystemQty = function(tab) {
         return;
     }
 
-    // Chỉ hiện các phân loại (túi/gói/cái) mà SKU này THỰC SỰ đang có trong kho
     const labelMap = { 'túi': 'Túi (đóng sẵn - trắng)', 'gói': 'Gói (túi gốc - xám)', 'cái': 'Cái (thùng/hộp)' };
     const unitsPresent = getUnitsPresentForSku(sku);
     const prevType = typeSel.value;
@@ -3279,7 +3222,6 @@ window.updateKKSystemQty = function(tab) {
             .map(u => `<option value="${u}">${labelMap[u]}</option>`)
             .join('');
     } else {
-        // SKU chưa có hàng nào trong kho — không xác định được phân loại, hiện đủ 3 để không chặn thao tác
         typeSel.innerHTML = ['túi', 'gói', 'cái'].map(u => `<option value="${u}">${labelMap[u]}</option>`).join('');
     }
 
@@ -3339,7 +3281,6 @@ document.getElementById('form-convert').addEventListener('submit', async e => {
     const bagsCreated = bagsWanted;
     const goiTru = bagsCreated * ratio;
 
-    // Xác định vị trí đích: một vị trí trên kệ đã chọn (nếu còn hợp lệ) hoặc Hàng Chờ
     const useTargetLoc = targetLocId !== 'WAITING' && fbLocations[targetLocId] && fbLocations[targetLocId].sku === sku;
     const targetSlot = useTargetLoc ? findSlotOfLocation(targetLocId) : null;
     const targetLabelShort = targetSlot ? `${targetSlot.rackId}-${targetSlot.tierId}-${targetSlot.slotId}` : targetLocId;
@@ -3546,8 +3487,6 @@ window.switchTab = (tabId) => {
     document.getElementById(`menu-${tabId}`)?.classList.add('active');
     if (tabId === 'dashboard') updateDashboard();
     if (tabId === 'kho-thuc-te') {
-        // Luôn bắt đầu ở chế độ XEM (khoá) mỗi khi vào lại tab này, để tránh
-        // thao tác nhầm nếu người dùng quên tắt chỉnh sửa lần trước.
         if (shelfEditMode) {
             shelfEditMode = false;
             document.getElementById('warehouse-container')?.classList.remove('shelf-edit-mode');
@@ -3636,7 +3575,6 @@ function renderUserTable() {
             lastLoginStr = `<span style="font-weight:700;color:#334155;">${time}</span><br><span style="font-size:11px;color:#94a3b8;">${date}</span>`;
         }
 
-        // Nút cưỡng chế đăng xuất — chỉ hiện nếu: admin đang dùng, user kia đang online, không phải chính mình
         const forceKickBtn = (!isSelf && isOnline && currentUser?.role === 'admin')
             ? `<button class="btn-force-kick" title="Cưỡng chế đăng xuất" onclick="adminForceLogout('${uid}','${user.name}')">⚡ Kick</button>`
             : '';
@@ -3707,7 +3645,7 @@ window.openModalLoginHistory = async (uid, name) => {
 
         const rows = Object.values(records)
             .sort((a, b) => new Date(b.loginTime) - new Date(a.loginTime))
-            .slice(0, 200); // chỉ hiện 200 lần gần nhất để tránh chậm
+            .slice(0, 200); 
 
         if (!rows.length) {
             document.getElementById('modal-body').innerHTML =
@@ -3927,11 +3865,6 @@ function showLoginConflictPopup(uid, reqSession) {
             clearInterval(_conflictCountdownInterval);
             _conflictCountdownInterval = null;
             closeConflictPopup();
-            // Không chủ động gửi "rejected" nữa: nếu không bấm gì, để thiết bị
-            // đang yêu cầu tự xử lý hết giờ (tự động được cấp quyền vào) —
-            // tránh trường hợp 2 phía cùng phản hồi trong tích tắc gây xung đột.
-            // Ở đây chỉ cần dọn dẹp phiên hiện tại vì gần như chắc chắn sẽ bị
-            // thiết bị kia thay thế.
             if (currentLoginRecordId && currentUser?.uid) {
                 const logoutRef = db.ref(`loginHistory/${currentUser.uid}/${currentLoginRecordId}/logoutTime`);
                 logoutRef.set(new Date().toISOString()).catch(() => {});
@@ -3950,15 +3883,12 @@ function showLoginConflictPopup(uid, reqSession) {
         clearInterval(_conflictCountdownInterval);
         _conflictCountdownInterval = null;
         closeConflictPopup();
-        stopPresenceHeartbeat(); // dừng ngay để không ghi đè lại presence sau khi xóa
+        stopPresenceHeartbeat(); 
 
-        // ── Ghi logoutTime cho bản ghi lịch sử đăng nhập hiện tại ──
-        // Nếu không làm bước này, bản ghi sẽ kẹt ở "Đang online" mãi
-        // vì auth.signOut() không kích hoạt onDisconnect (chỉ đóng tab mới kích hoạt).
         if (currentLoginRecordId && currentUser?.uid) {
             try {
                 const logoutRef = db.ref(`loginHistory/${currentUser.uid}/${currentLoginRecordId}/logoutTime`);
-                await logoutRef.onDisconnect().cancel(); // hủy onDisconnect cũ để tránh ghi 2 lần
+                await logoutRef.onDisconnect().cancel(); 
                 await logoutRef.set(new Date().toISOString());
             } catch (e) {
                 console.warn('Không thể ghi logoutTime khi nhường đăng nhập:', e);
@@ -3967,7 +3897,6 @@ function showLoginConflictPopup(uid, reqSession) {
             currentLoginRecordId = null;
         }
 
-        // Xóa presence để người kia thấy offline ngay
         if (currentUser?.uid) {
             try {
                 await db.ref(`presence/${currentUser.uid}`).remove();
@@ -3980,17 +3909,12 @@ function showLoginConflictPopup(uid, reqSession) {
     };
 }
 
-// ── CƯỠNG CHẾ ĐĂNG XUẤT (Admin) ────────────────────────────────────
-
-// Admin gọi hàm này để kick user đang online — không hỏi, kick thẳng
 window.adminForceLogout = async function(uid, name) {
     if (currentUser?.role !== 'admin') {
         showToast('❌ Chỉ Admin mới có quyền này!');
         return;
     }
     try {
-        // 1. Ghi logoutTime vào TẤT CẢ record loginHistory đang mở của user này
-        //    (record mở = logoutTime === null), không cần chờ client
         const histSnap = await db.ref(`loginHistory/${uid}`).get();
         if (histSnap.exists()) {
             const now = new Date().toISOString();
@@ -4003,10 +3927,8 @@ window.adminForceLogout = async function(uid, name) {
             if (Object.keys(updates).length) await db.ref().update(updates);
         }
 
-        // 2. Xóa presence ngay (trạng thái đổi sang Offline tức thì)
         await db.ref(`presence/${uid}`).remove();
 
-        // 3. Ghi flag forceLogout — nếu tab còn sống thì client tự signOut
         await db.ref(`users/${uid}/loginRequest`).set({
             forceLogout: true,
             byAdminUid:  currentUser.uid,
@@ -4016,7 +3938,6 @@ window.adminForceLogout = async function(uid, name) {
 
         showToast(`⚡ Đã kick ${name}`);
 
-        // Dọn flag sau 10 giây
         setTimeout(() => {
             db.ref(`users/${uid}/loginRequest`).remove().catch(() => {});
         }, 10000);
@@ -4033,11 +3954,6 @@ async function closeOtherSessions(uid, currentSessionId) {
         let count = 0;
         histSnap.forEach(child => {
             const rec = child.val();
-            // LƯU Ý: Firebase RTDB XÓA HẲN field khi ghi giá trị null (không lưu
-            // literal null) — nên bản ghi "đang mở" có logoutTime là undefined,
-            // không phải null. Trước đây chỉ check "=== null" nên không bao giờ
-            // đúng -> các phiên cũ không bao giờ được tự đóng, gây hiển thị
-            // nhiều dòng "Đang online" cùng lúc cho cùng 1 tài khoản.
             const isOpen = rec.logoutTime === null || rec.logoutTime === undefined;
             if (isOpen && rec.sessionId !== currentSessionId) {
                 updates[`loginHistory/${uid}/${child.key}/logoutTime`] = new Date().toISOString();
@@ -4053,10 +3969,8 @@ async function closeOtherSessions(uid, currentSessionId) {
     }
 }
 
-// Phía user bị kick — signOut ngay, không hiện thông báo
 async function showForceLogoutScreen(_adminName) {
-    stopPresenceHeartbeat(); // dừng ngay để không ghi đè lại presence
-    // Ghi logoutTime trước khi signOut
+    stopPresenceHeartbeat(); 
     if (currentLoginRecordId && currentUser?.uid) {
         try {
             const logoutRef = db.ref(`loginHistory/${currentUser.uid}/${currentLoginRecordId}/logoutTime`);
@@ -4073,7 +3987,6 @@ async function showForceLogoutScreen(_adminName) {
     auth.signOut();
 }
 
-// (Giữ lại để không lỗi nếu nút OK trong overlay vẫn còn trong DOM)
 window.doForceLogout = () => auth.signOut();
 
 function closeConflictPopup() {
@@ -4148,7 +4061,6 @@ async function saveTxBackupLimit(value) {
 }
 
 
-// ── GIỚI HẠN LỊCH SỬ ĐĂNG NHẬP ────────────────────────────────
 function getLoginHistoryLimit() {
     return parseInt(fbSettings?.loginHistoryLimit) || 15;
 }

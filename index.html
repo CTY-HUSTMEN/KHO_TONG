@@ -72,7 +72,6 @@
         .sidebar-menu li.active a { color: #fff; background: var(--sidebar-hover); border-left: 4px solid var(--accent-color); }
         .logout-btn { margin: 16px; padding: 11px; background: var(--danger); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
 
-        /* ── MOBILE TOPBAR & OFF-CANVAS SIDEBAR (hidden on desktop by default) ── */
         #mobile-topbar { display: none; }
         #btn-mobile-close { display: none; }
         #sidebar-overlay { display: none; }
@@ -124,7 +123,6 @@
             font-size: 10px; font-weight: 700; color: #94a3b8;
             background: #e2e8f0; padding: 1px 6px; border-radius: 3px;
         }
-        /* Slot capacity bar */
         .shelf-capacity-bar {
             position: absolute; top: 4px; right: 8px;
             font-size: 10px; color: #94a3b8; background: #e2e8f0;
@@ -711,7 +709,6 @@
             <h1 class="tab-title">Quy Đổi Túi Gốc (Xám) → Túi Đóng Sẵn (Trắng)</h1>
             <div class="trade-container">
 
-                <!-- CARD 1: THỰC HIỆN QUY ĐỔI -->
                 <div class="form-card">
                     <h2 style="color:var(--accent-color); margin-bottom:18px;">Quy Đổi Túi Sang Gói</h2>
                     <form id="form-convert">
@@ -773,7 +770,6 @@
         <div id="panel-kiem-kho" class="tab-panel role-hide-nv">
             <h1 class="tab-title">Kiểm Kho Thực Tế</h1>
 
-            <!-- Panel: Kiểm kho theo Phân Loại (Túi / Gói / Cái) -->
             <div id="kk-panel-unit">
                 <div class="form-card" style="max-width:580px;">
                     <p style="font-size:13px;color:#64748b;margin-bottom:18px;">Chọn SKU và phân loại bao bì (túi / gói / cái), nhập số lượng đếm thực tế trên kệ. Hệ thống sẽ tự so sánh với tồn trên hệ thống và báo lệch (thiếu) hoặc dư hàng.</p>
@@ -893,7 +889,7 @@
                                     <th>Email</th>
                                     <th>Chức Vụ</th>
                                     <th>Ngày Tạo</th>
-                                    <th>Đăng Nhập Lần Cuối</th> <!-- Thêm dòng này -->
+                                    <th>Đăng Nhập Lần Cuối</th> 
                                     <th>Thao Tác</th>
                                 </tr>
                             </thead>
@@ -1014,7 +1010,7 @@ const secondaryApp  = firebase.initializeApp(firebaseConfig, "Secondary");
 const secondaryAuth = secondaryApp.auth();
 
 let currentSessionId = sessionStorage.getItem('mySessionId');
-const isFreshAppOpen  = !currentSessionId; 
+const isFreshAppOpen  = !currentSessionId; // true = tab/app vừa mở lại từ đầu
 if (!currentSessionId) {
     currentSessionId = generateUUID();
     sessionStorage.setItem('mySessionId', currentSessionId);
@@ -3183,27 +3179,36 @@ window.updateKKSystemQty = function(tab) {
     const sku  = document.getElementById('kk-product-unit').value;
     const typeSel = document.getElementById('kk-unit-type');
 
+    const baseUnits = ['túi', 'gói', 'cái'];
+    const customUnits = fbSettings?.customUnits ? Object.values(fbSettings.customUnits) : [];
+    const allAvailableUnits = [...new Set([...baseUnits, ...customUnits])];
+
+    const labelMap = { 
+        'túi': 'Túi (đóng sẵn - trắng)', 
+        'gói': 'Gói (túi gốc - xám)', 
+        'cái': 'Cái (thùng/hộp)' 
+    };
+    customUnits.forEach(u => {
+        if (!labelMap[u]) labelMap[u] = u.charAt(0).toUpperCase() + u.slice(1);
+    });
+
     if (!sku) {
         document.getElementById('kk-sys-qty-unit').value = '';
-        typeSel.innerHTML = `
-            <option value="túi">Túi (đóng sẵn - trắng)</option>
-            <option value="gói">Gói (túi gốc - xám)</option>
-            <option value="cái">Cái (thùng/hộp)</option>`;
+        typeSel.innerHTML = allAvailableUnits.map(u => `<option value="${u}">${labelMap[u]}</option>`).join('');
         updateKKDiffPreview();
         return;
     }
 
-    const labelMap = { 'túi': 'Túi (đóng sẵn - trắng)', 'gói': 'Gói (túi gốc - xám)', 'cái': 'Cái (thùng/hộp)' };
     const unitsPresent = getUnitsPresentForSku(sku);
     const prevType = typeSel.value;
 
     if (unitsPresent.size) {
-        typeSel.innerHTML = ['túi', 'gói', 'cái']
+        typeSel.innerHTML = allAvailableUnits
             .filter(u => unitsPresent.has(u))
             .map(u => `<option value="${u}">${labelMap[u]}</option>`)
             .join('');
     } else {
-        typeSel.innerHTML = ['túi', 'gói', 'cái'].map(u => `<option value="${u}">${labelMap[u]}</option>`).join('');
+        typeSel.innerHTML = allAvailableUnits.map(u => `<option value="${u}">${labelMap[u]}</option>`).join('');
     }
 
     if (prevType && typeSel.querySelector(`option[value="${prevType}"]`)) typeSel.value = prevType;
@@ -3211,8 +3216,11 @@ window.updateKKSystemQty = function(tab) {
     const unit = typeSel.value;
     const unitMap = getStockByUnitMap([unit]);
     document.getElementById('kk-sys-qty-unit').value = unitMap.get(sku) || 0;
+    
     const shortLabelMap = { 'túi': 'Túi đóng sẵn', 'gói': 'Gói/túi gốc', 'cái': 'Cái/thùng' };
-    document.getElementById('kk-unit-label-sys').textContent = `(${shortLabelMap[unit] || unit})`;
+    const shortLabel = shortLabelMap[unit] || unit; 
+    document.getElementById('kk-unit-label-sys').textContent = `(${shortLabel})`;
+    
     updateKKDiffPreview();
 };
 

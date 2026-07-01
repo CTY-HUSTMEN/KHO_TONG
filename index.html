@@ -145,10 +145,6 @@
         .item-bundle.dragging { opacity: 0.45; cursor: grabbing; outline: 2px dashed #334155; transform: none; }
         .item-bundle.touch-dragging { opacity: 0.5; outline: 2px dashed #334155; }
 
-        /* Chế độ CHỈNH SỬA vị trí kệ — chỉ khi bật mới cho phép kéo/thả/resize.
-           Điều này tránh việc chạm/giữ nhầm trên di động bị trình duyệt hiểu thành
-           bôi đen chữ / mở menu Copy-Paste, vì ở chế độ xem thường không có
-           listener kéo-thả nào được gắn vào phần tử. */
         .shelf-edit-mode .item-bundle { cursor: grab; box-shadow: 0 0 0 2px rgba(59,130,246,0.45), 1px 2px 5px rgba(0,0,0,0.18); }
         .shelf-edit-mode .item-bundle:active { cursor: grabbing; }
         .shelf-edit-mode .item-bundle,
@@ -270,8 +266,6 @@
         .log-filter-bar button { padding: 8px 16px; background: #f1f5f9; border: 1px solid var(--border-light); border-radius: 8px; cursor: pointer; font-size: 13px; }
         .log-filter-bar button:hover { background: #e2e8f0; }
 
-        /* ── LOGIN CONFLICT NOTIFICATION POPUP ─── */
-        /* ── FORCE LOGOUT OVERLAY ── */
         #force-logout-overlay {
             position: fixed; inset: 0; background: rgba(15,23,42,0.82);
             display: none; align-items: center; justify-content: center;
@@ -331,7 +325,6 @@
         .btn-conflict-reject { background: #f1f5f9; color: #334155; border: 1px solid var(--border-light); }
         .btn-conflict-reject:hover { background: #e2e8f0; }
 
-        /* ── TRANSACTION LIMIT SETTINGS ─── */
         .tx-limit-bar {
             display: flex; align-items: center; gap: 12px;
             background: #f8fafc; border: 1px solid var(--border-light);
@@ -344,13 +337,9 @@
         .log-progress-bar { flex: 1; min-width: 140px; height: 8px; background: #e2e8f0; border-radius: 99px; overflow: hidden; }
         .log-progress-fill { height: 100%; border-radius: 99px; transition: width 0.4s ease; }
 
-        /* ════════════════════════════════════════════════════════
-           RESPONSIVE / MOBILE
-        ════════════════════════════════════════════════════════ */
         @media (max-width: 880px) {
             body { height: 100vh; overflow: hidden; }
 
-            /* Topbar thay cho sidebar cố định */
             #mobile-topbar {
                 display: flex; align-items: center; gap: 12px;
                 background: var(--sidebar-bg); color: #fff;
@@ -365,7 +354,6 @@
 
             #app-section { display: flex; flex-direction: column; }
 
-            /* Sidebar trở thành drawer trượt từ trái */
             .sidebar {
                 position: fixed; top: 0; left: 0; height: 100%; z-index: 9500;
                 width: 250px; max-width: 80vw;
@@ -391,7 +379,6 @@
 
             .tab-title { font-size: 18px; flex-wrap: wrap; gap: 8px; }
 
-            /* Grid / layout chính xếp dọc 1 cột */
             .kpi-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
             .kpi-card { padding: 14px; }
             .kpi-card .val { font-size: 22px; }
@@ -407,7 +394,6 @@
             .pagination-container { gap: 6px; }
             .page-btn { padding: 7px 12px; font-size: 12px; }
 
-            /* Bảng: cho cuộn ngang trong khung, không vỡ layout */
             .table-container { max-height: 360px; }
             .table-container-logs { max-height: none; min-height: 320px; }
             table { font-size: 12px; }
@@ -453,7 +439,6 @@
 
 <div id="toast"></div>
 
-<!-- ── LOGIN CONFLICT POPUP (Cảnh báo đăng nhập từ xa) ── -->
 <div id="force-logout-overlay">
     <div class="force-logout-card">
         <div class="fl-icon">🚫</div>
@@ -826,7 +811,6 @@
         <div id="panel-logs" class="tab-panel">
             <h1 class="tab-title">Sổ Nhật Ký Giao Dịch</h1>
 
-            <!-- Thanh cài đặt giới hạn sao lưu -->
             <div class="tx-limit-bar">
                 <label>💾 Giới hạn sao lưu:</label>
                 <div style="display:flex;align-items:center;gap:6px;">
@@ -843,7 +827,6 @@
                 <span style="font-size:11px;color:#94a3b8;">Vượt giới hạn → tự động xóa cũ nhất</span>
             </div>
 
-            <!-- Thanh lọc -->
             <div class="log-filter-bar">
                 <select id="log-filter-type" onchange="renderLogs()">
                     <option value="">Tất cả nghiệp vụ</option>
@@ -861,7 +844,6 @@
                 <span id="log-count" style="font-size:12px;color:#64748b;"></span>
             </div>
 
-            <!-- Phân trang + số dòng/trang -->
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
                 <div id="log-pagination" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;"></div>
                 <div style="margin-left:auto;display:flex;align-items:center;gap:6px;">
@@ -951,7 +933,6 @@
                         </form>
                     </div>
 
-                    <!-- Giới hạn lưu lịch sử đăng nhập -->
                     <div class="form-card" style="margin-top:16px;">
                         <h3 style="font-size:14px;font-weight:700;margin-bottom:14px;">Lịch Sử Đăng Nhập</h3>
                         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
@@ -1033,7 +1014,7 @@ const secondaryApp  = firebase.initializeApp(firebaseConfig, "Secondary");
 const secondaryAuth = secondaryApp.auth();
 
 let currentSessionId = sessionStorage.getItem('mySessionId');
-const isFreshAppOpen  = !currentSessionId; // true = tab/app vừa mở lại từ đầu
+const isFreshAppOpen  = !currentSessionId; 
 if (!currentSessionId) {
     currentSessionId = generateUUID();
     sessionStorage.setItem('mySessionId', currentSessionId);
